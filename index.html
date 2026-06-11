@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FINC203 Study Arena 🚀</title>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1e2a3a;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --border: #1e3a5f;
+  --card-bg: #131f35;
+  --glow: 0 0 20px rgba(0,212,255,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== PARTICLES ===== */
+#particles { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; position: relative; z-index: 1; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===== HOME ===== */
+#home {
+  align-items: center; justify-content: center;
+  text-align: center; padding: 20px;
+}
+.logo {
+  font-size: clamp(2rem,6vw,4rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
+.subtitle { color: var(--text2); font-size: 1.1rem; margin-bottom: 40px; }
+.stats-bar {
+  display: flex; gap: 24px; justify-content: center;
+  margin-bottom: 40px; flex-wrap: wrap;
+}
+.stat-pill {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50px; padding: 8px 20px;
+  font-size: 0.9rem; color: var(--accent);
+}
+.stat-pill span { color: var(--text); font-weight: 700; }
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px; max-width: 900px; width: 100%;
+}
+.mode-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+}
+.mode-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+  transform: translateY(-4px);
+}
+.mode-icon { font-size: 2.4rem; margin-bottom: 12px; }
+.mode-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { color: var(--text2); font-size: 0.85rem; line-height: 1.5; }
+.mode-badge {
+  display: inline-block; margin-top: 10px;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 50px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.badge-easy { background: rgba(16,185,129,0.2); color: var(--accent3); }
+.badge-medium { background: rgba(245,158,11,0.2); color: var(--warning); }
+.badge-hard { background: rgba(239,68,68,0.2); color: var(--danger); }
+.badge-wild { background: rgba(124,58,237,0.2); color: var(--accent2); }
+
+/* ===== HEADER ===== */
+.screen-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.back-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+  padding: 6px 14px; cursor: pointer; font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.screen-title { font-weight: 700; font-size: 1.1rem; }
+.xp-bar-container { flex: 1; }
+.xp-label { font-size: 0.75rem; color: var(--text2); margin-bottom: 4px; }
+.xp-bar { height: 8px; background: var(--surface2); border-radius: 50px; overflow: hidden; }
+.xp-fill {
+  height: 100%; border-radius: 50px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.5s ease;
+}
+.score-display {
+  font-weight: 700; font-size: 1.1rem;
+  color: var(--accent);
+}
+.streak-display { font-size: 1.1rem; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex; gap: 8px; padding: 12px 20px;
+  overflow-x: auto; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.filter-btn {
+  white-space: nowrap;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); border-radius: 50px;
+  padding: 6px 14px; cursor: pointer; font-size: 0.8rem;
+  transition: all 0.2s;
+}
+.filter-btn.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #000; font-weight: 700;
+}
+
+/* ===== FLASHCARDS ===== */
+#flashcard-screen .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.fc-counter { color: var(--text2); font-size: 0.9rem; margin-bottom: 16px; }
+.fc-progress { width: 100%; max-width: 500px; height: 6px; background: var(--surface2); border-radius: 50px; margin-bottom: 24px; overflow: hidden; }
+.fc-progress-fill { height: 100%; border-radius: 50px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s; }
+.card-container { perspective: 1000px; width: 100%; max-width: 500px; height: 320px; margin-bottom: 24px; cursor: pointer; }
+.card-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.card-container.flipped .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 30px; text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.card-back { transform: rotateY(180deg); background: linear-gradient(135deg, #0d1b2a, #1a2a4a); border-color: var(--accent); }
+.card-week { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.card-term { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 800; margin-bottom: 8px; }
+.card-hint { color: var(--text2); font-size: 0.8rem; }
+.card-definition { font-size: clamp(0.85rem, 2vw, 1rem); line-height: 1.6; color: var(--text); }
+.flip-hint { color: var(--text2); font-size: 0.8rem; margin-bottom: 20px; }
+.card-actions { display: flex; gap: 12px; }
+.card-btn {
+  flex: 1; max-width: 150px; padding: 12px 20px;
+  border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-wrong { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid var(--danger); }
+.btn-wrong:hover { background: var(--danger); color: white; }
+.btn-right { background: rgba(16,185,129,0.2); color: var(--accent3); border: 1px solid var(--accent3); }
+.btn-right:hover { background: var(--accent3); color: white; }
+.btn-shuffle {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); border-radius: 10px; padding: 8px 16px;
+  cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+}
+.btn-shuffle:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== MATCH GAME ===== */
+#match-screen .content { flex: 1; padding: 20px; }
+.match-instruction { text-align: center; color: var(--text2); margin-bottom: 20px; font-size: 0.9rem; }
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 900px; margin: 0 auto; }
+.match-col { display: flex; flex-direction: column; gap: 10px; }
+.match-col-title { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.match-item {
+  background: var(--card-bg); border: 2px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  cursor: pointer; font-size: 0.85rem; line-height: 1.4;
+  transition: all 0.2s; min-height: 60px;
+  display: flex; align-items: center;
+}
+.match-item:hover { border-color: var(--accent); }
+.match-item.selected { border-color: var(--accent2); background: rgba(124,58,237,0.15); }
+.match-item.matched { border-color: var(--accent3); background: rgba(16,185,129,0.15); pointer-events: none; opacity: 0.7; }
+.match-item.wrong { border-color: var(--danger); background: rgba(239,68,68,0.15); animation: shake 0.4s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+.match-controls { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+
+/* ===== QUIZ ===== */
+#quiz-screen .content { flex: 1; padding: 20px; max-width: 700px; margin: 0 auto; width: 100%; }
+.quiz-qnum { color: var(--text2); font-size: 0.85rem; margin-bottom: 8px; }
+.quiz-question { font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 700; margin-bottom: 24px; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 12px; }
+.quiz-option {
+  background: var(--card-bg); border: 2px solid var(--border);
+  border-radius: 12px; padding: 16px 20px;
+  cursor: pointer; font-size: 0.95rem; transition: all 0.2s; line-height: 1.4;
+}
+.quiz-option:hover:not(.locked) { border-color: var(--accent); transform: translateX(4px); }
+.quiz-option.correct { border-color: var(--accent3); background: rgba(16,185,129,0.2); }
+.quiz-option.wrong { border-color: var(--danger); background: rgba(239,68,68,0.2); }
+.quiz-option.locked { pointer-events: none; }
+.quiz-feedback { margin-top: 16px; padding: 14px; border-radius: 10px; font-size: 0.9rem; line-height: 1.5; }
+.feedback-correct { background: rgba(16,185,129,0.15); border: 1px solid var(--accent3); color: var(--accent3); }
+.feedback-wrong { background: rgba(239,68,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
+.quiz-next-btn {
+  margin-top: 16px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000; border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+}
+.quiz-next-btn:hover { opacity: 0.9; transform: scale(1.01); }
+.quiz-combo { color: var(--warning); font-weight: 700; font-size: 0.85rem; margin-top: 8px; }
+
+/* ===== SPEED BLITZ ===== */
+#speed-screen .content { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.speed-timer-ring { position: relative; width: 100px; height: 100px; margin-bottom: 20px; }
+.speed-timer-ring svg { transform: rotate(-90deg); }
+.speed-timer-ring circle { fill: none; stroke-width: 8; }
+.timer-bg { stroke: var(--surface2); }
+.timer-fill { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 0.1s linear; }
+.timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.5rem; font-weight: 800; }
+.speed-word { font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 800; text-align: center; margin-bottom: 8px; }
+.speed-week { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; }
+.speed-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 600px; }
+.speed-option {
+  background: var(--card-bg); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px 12px;
+  cursor: pointer; font-size: 0.85rem; text-align: center; line-height: 1.4;
+  transition: all 0.15s;
+}
+.speed-option:hover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
+.speed-option.correct { border-color: var(--accent3); background: rgba(16,185,129,0.3); animation: pop 0.3s; }
+.speed-option.wrong { border-color: var(--danger); background: rgba(239,68,68,0.3); }
+@keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+.speed-score-big { font-size: 2rem; font-weight: 900; color: var(--accent); }
+.speed-streak { color: var(--warning); font-size: 1rem; margin-bottom: 20px; }
+
+/* ===== TRUE/FALSE ===== */
+#tf-screen .content { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.tf-question { font-size: clamp(0.95rem, 2.5vw, 1.2rem); text-align: center; max-width: 600px; margin-bottom: 10px; font-weight: 600; line-height: 1.6; }
+.tf-term { color: var(--accent); font-weight: 800; }
+.tf-divider { color: var(--text2); margin: 6px 0 16px; font-size: 0.9rem; }
+.tf-statement { color: var(--text); background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; text-align: center; max-width: 600px; width: 100%; margin-bottom: 28px; line-height: 1.5; font-size: 0.95rem; }
+.tf-buttons { display: flex; gap: 20px; }
+.tf-btn {
+  width: 140px; height: 60px; border-radius: 14px;
+  border: 2px solid; font-size: 1.1rem; font-weight: 800;
+  cursor: pointer; transition: all 0.2s;
+}
+.tf-true { background: rgba(16,185,129,0.15); border-color: var(--accent3); color: var(--accent3); }
+.tf-true:hover { background: var(--accent3); color: white; transform: scale(1.05); }
+.tf-false { background: rgba(239,68,68,0.15); border-color: var(--danger); color: var(--danger); }
+.tf-false:hover { background: var(--danger); color: white; transform: scale(1.05); }
+.tf-feedback { margin-top: 16px; font-size: 1rem; font-weight: 700; min-height: 30px; }
+
+/* ===== RESULTS ===== */
+.results-screen {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 30px; text-align: center;
+}
+.results-emoji { font-size: 4rem; margin-bottom: 16px; }
+.results-title { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+.results-subtitle { color: var(--text2); margin-bottom: 30px; }
+.results-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px; }
+.result-stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px 24px; min-width: 100px; }
+.result-stat-num { font-size: 2rem; font-weight: 900; color: var(--accent); }
+.result-stat-label { color: var(--text2); font-size: 0.8rem; }
+.results-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.btn-primary {
+  padding: 12px 28px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #000; border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
+.btn-secondary {
+  padding: 12px 28px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--text);
+  border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* ===== CONNECT GAME ===== */
+#connect-screen .content { flex: 1; padding: 20px; }
+.connect-instruction { text-align: center; color: var(--text2); margin-bottom: 16px; font-size: 0.9rem; }
+.connect-board { max-width: 700px; margin: 0 auto; }
+.connect-selected-group { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; margin-bottom: 16px; padding: 10px; background: var(--surface2); border-radius: 12px; border: 1px dashed var(--border); }
+.connect-selected-label { color: var(--text2); font-size: 0.8rem; align-self: center; }
+.connect-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.connect-tile {
+  background: var(--card-bg); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 8px;
+  text-align: center; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; line-height: 1.3;
+  min-height: 60px; display: flex; align-items: center; justify-content: center;
+}
+.connect-tile:hover { border-color: var(--accent); }
+.connect-tile.selected { border-color: var(--accent2); background: rgba(124,58,237,0.2); }
+.connect-tile.matched-0 { background: rgba(16,185,129,0.3); border-color: var(--accent3); pointer-events: none; }
+.connect-tile.matched-1 { background: rgba(0,212,255,0.2); border-color: var(--accent); pointer-events: none; }
+.connect-tile.matched-2 { background: rgba(245,158,11,0.2); border-color: var(--warning); pointer-events: none; }
+.connect-tile.matched-3 { background: rgba(124,58,237,0.2); border-color: var(--accent2); pointer-events: none; }
+.connect-tile.wrong { border-color: var(--danger); animation: shake 0.4s; }
+.connect-submit { width: 100%; max-width: 300px; display: block; margin: 0 auto; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.connect-submit:hover { background: var(--accent2); color: white; }
+.connect-lives { display: flex; gap: 8px; justify-content: center; margin-top: 12px; font-size: 1.4rem; }
+.connect-groups-found { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.connect-group-found { padding: 10px 16px; border-radius: 10px; font-size: 0.85rem; }
+.cgf-0 { background: rgba(16,185,129,0.2); border: 1px solid var(--accent3); }
+.cgf-1 { background: rgba(0,212,255,0.1); border: 1px solid var(--accent); }
+.cgf-2 { background: rgba(245,158,11,0.15); border: 1px solid var(--warning); }
+.cgf-3 { background: rgba(124,58,237,0.2); border: 1px solid var(--accent2); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 24px;
+  font-size: 0.9rem; font-weight: 600;
+  z-index: 9999; transition: transform 0.3s;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--accent3); color: var(--accent3); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.info { border-color: var(--accent); color: var(--accent); }
+
+/* ===== XP POPUP ===== */
+.xp-popup {
+  position: fixed; pointer-events: none; z-index: 9999;
+  font-weight: 900; font-size: 1.2rem; color: var(--warning);
+  animation: floatUp 1.2s forwards;
+}
+@keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
+
+/* ===== MISC ===== */
+.center-action { display: flex; justify-content: center; gap: 12px; padding: 16px; flex-wrap: wrap; }
+.loading { text-align: center; padding: 60px; color: var(--text2); }
+.empty-state { text-align: center; padding: 60px; color: var(--text2); font-size: 1rem; }
+@media (max-width: 500px) {
+  .connect-tiles { grid-template-columns: repeat(3, 1fr); }
+  .speed-options { grid-template-columns: 1fr 1fr; }
+  .match-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="toast" id="toast"></div>
+
+<!-- ===================== HOME ===================== -->
+<div class="screen active" id="home">
+  <div class="logo">💹 FINC203 Study Arena</div>
+  <div class="subtitle">Topics 7–12 | Final Exam Prep</div>
+  <div class="stats-bar">
+    <div class="stat-pill">⚡ XP: <span id="home-xp">0</span></div>
+    <div class="stat-pill">🔥 Best Streak: <span id="home-streak">0</span></div>
+    <div class="stat-pill">📚 Terms: <span>150+</span></div>
+  </div>
+  <div class="modes-grid">
+    <div class="mode-card" onclick="startFlashcards()">
+      <div class="mode-icon">🃏</div>
+      <div class="mode-name">Flashcards</div>
+      <div class="mode-desc">Flip cards to learn every term. Mark as known or unknown to focus on weak spots.</div>
+      <span class="mode-badge badge-easy">Easy</span>
+    </div>
+    <div class="mode-card" onclick="startQuiz()">
+      <div class="mode-icon">🧠</div>
+      <div class="mode-name">Quiz Mode</div>
+      <div class="mode-desc">Multiple choice questions with instant feedback and combo bonuses.</div>
+      <span class="mode-badge badge-medium">Medium</span>
+    </div>
+    <div class="mode-card" onclick="startMatch()">
+      <div class="mode-icon">🔗</div>
+      <div class="mode-name">Match It</div>
+      <div class="mode-desc">Connect each term to its correct definition. Race to clear the board!</div>
+      <span class="mode-badge badge-medium">Medium</span>
+    </div>
+    <div class="mode-card" onclick="startTrueFalse()">
+      <div class="mode-icon">⚡</div>
+      <div class="mode-name">True or False</div>
+      <div class="mode-desc">Lightning-fast true/false rounds. Build streaks to earn bonus XP!</div>
+      <span class="mode-badge badge-easy">Fast</span>
+    </div>
+    <div class="mode-card" onclick="startSpeed()">
+      <div class="mode-icon">🚀</div>
+      <div class="mode-name">Speed Blitz</div>
+      <div class="mode-desc">Race against the clock. 10 seconds per question — how far can you go?</div>
+      <span class="mode-badge badge-hard">Hard</span>
+    </div>
+    <div class="mode-card" onclick="startConnect()">
+      <div class="mode-icon">🟡</div>
+      <div class="mode-name">Connections</div>
+      <div class="mode-desc">Group 4 terms that share a common category. NYT Connections-style!</div>
+      <span class="mode-badge badge-wild">Wild</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FLASHCARD SCREEN ===================== -->
+<div class="screen" id="flashcard-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">🃏 Flashcards</span>
+    <div class="xp-bar-container">
+      <div class="xp-label">XP <span id="fc-xp-num">0</span></div>
+      <div class="xp-bar"><div class="xp-fill" id="fc-xp-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="filter-bar" id="fc-filter-bar"></div>
+  <div class="content">
+    <div class="fc-counter" id="fc-counter">Card 1 of 50</div>
+    <div class="fc-progress"><div class="fc-progress-fill" id="fc-progress" style="width:0%"></div></div>
+    <div class="card-container" id="fc-card" onclick="flipCard()">
+      <div class="card-inner" id="fc-inner">
+        <div class="card-face card-front">
+          <div class="card-week" id="fc-week"></div>
+          <div class="card-term" id="fc-term">Loading...</div>
+          <div class="card-hint">Click to reveal definition</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-week" id="fc-week-back"></div>
+          <div class="card-definition" id="fc-definition"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-hint">👆 Click card to flip</div>
+    <div class="card-actions" id="fc-actions" style="display:none">
+      <button class="card-btn btn-wrong" onclick="markCard(false)">✗ Need Practice</button>
+      <button class="card-btn btn-right" onclick="markCard(true)">✓ Got It!</button>
+    </div>
+    <div class="center-action" style="margin-top:12px">
+      <button class="btn-shuffle" onclick="shuffleFC()">🔀 Shuffle</button>
+      <button class="btn-shuffle" onclick="resetUnknown()">🔁 Review Unknowns</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== QUIZ SCREEN ===================== -->
+<div class="screen" id="quiz-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">🧠 Quiz</span>
+    <div class="score-display">Score: <span id="quiz-score">0</span></div>
+    <div class="streak-display">🔥<span id="quiz-streak">0</span></div>
+  </div>
+  <div class="filter-bar" id="quiz-filter-bar"></div>
+  <div class="content" style="padding:20px">
+    <div class="quiz-qnum" id="quiz-qnum">Question 1 of 20</div>
+    <div class="quiz-question" id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-combo" id="quiz-combo"></div>
+    <div class="quiz-feedback" id="quiz-feedback" style="display:none"></div>
+    <button class="quiz-next-btn" id="quiz-next" style="display:none" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<!-- ===================== MATCH SCREEN ===================== -->
+<div class="screen" id="match-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">🔗 Match It</span>
+    <div class="score-display">✓ <span id="match-score">0</span>/<span id="match-total">8</span></div>
+  </div>
+  <div class="filter-bar" id="match-filter-bar"></div>
+  <div class="content">
+    <div class="match-instruction">Click a TERM, then click its matching DEFINITION</div>
+    <div class="match-grid">
+      <div>
+        <div class="match-col-title">📌 Terms</div>
+        <div class="match-col" id="match-terms"></div>
+      </div>
+      <div>
+        <div class="match-col-title">📖 Definitions</div>
+        <div class="match-col" id="match-defs"></div>
+      </div>
+    </div>
+    <div class="match-controls">
+      <button class="btn-secondary" onclick="startMatch()">New Round 🔄</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TRUE/FALSE SCREEN ===================== -->
+<div class="screen" id="tf-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">⚡ True or False</span>
+    <div class="score-display">Score: <span id="tf-score">0</span></div>
+    <div class="streak-display">🔥<span id="tf-streak">0</span></div>
+  </div>
+  <div class="filter-bar" id="tf-filter-bar"></div>
+  <div class="content">
+    <div class="tf-question">
+      <span class="tf-term" id="tf-term"></span>
+    </div>
+    <div class="tf-divider">means...</div>
+    <div class="tf-statement" id="tf-statement"></div>
+    <div class="tf-buttons">
+      <button class="tf-btn tf-true" onclick="answerTF(true)">✓ TRUE</button>
+      <button class="tf-btn tf-false" onclick="answerTF(false)">✗ FALSE</button>
+    </div>
+    <div class="tf-feedback" id="tf-feedback"></div>
+    <div style="margin-top:20px;color:var(--text2);font-size:0.8rem" id="tf-count">1 of 30</div>
+  </div>
+</div>
+
+<!-- ===================== SPEED SCREEN ===================== -->
+<div class="screen" id="speed-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">🚀 Speed Blitz</span>
+    <div class="speed-score-big"><span id="speed-score">0</span></div>
+    <div class="streak-display">🔥<span id="speed-streak">0</span></div>
+  </div>
+  <div class="filter-bar" id="speed-filter-bar"></div>
+  <div class="content">
+    <div class="speed-timer-ring">
+      <svg viewBox="0 0 100 100" width="100" height="100">
+        <circle class="timer-bg" cx="50" cy="50" r="42"/>
+        <circle class="timer-fill" id="speed-timer-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-text" id="speed-timer">10</div>
+    </div>
+    <div class="speed-week" id="speed-week"></div>
+    <div class="speed-word" id="speed-word">Loading...</div>
+    <div class="speed-options" id="speed-options"></div>
+  </div>
+</div>
+
+<!-- ===================== CONNECT SCREEN ===================== -->
+<div class="screen" id="connect-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="screen-title">🟡 Connections</span>
+    <div class="score-display">Lives: <span id="connect-lives-text">4</span></div>
+  </div>
+  <div class="content">
+    <div class="connect-instruction">Find 4 terms that belong to the same category. You have 4 lives!</div>
+    <div class="connect-board">
+      <div class="connect-lives" id="connect-lives">❤️❤️❤️❤️</div>
+      <div class="connect-groups-found" id="connect-found"></div>
+      <div class="connect-tiles" id="connect-tiles"></div>
+      <button class="connect-submit" id="connect-submit" onclick="submitConnect()">Submit Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== RESULTS SCREEN ===================== -->
+<div class="screen" id="results-screen">
+  <div class="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Round Complete!</div>
+    <div class="results-subtitle" id="results-subtitle"></div>
+    <div class="results-stats" id="results-stats"></div>
+    <div class="results-actions" id="results-actions"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const ALL_TERMS = [
+  // WEEK 7 - Options
+  {term:"Option",def:"A contract giving the holder the RIGHT but NOT the obligation to buy or sell an asset at a predetermined price within a specific time frame.",week:"W7 Options"},
+  {term:"Option Premium",def:"The price the option buyer pays to the option seller for the right. This is the maximum loss for the buyer.",week:"W7 Options"},
+  {term:"Strike Price",def:"The predetermined price at which the option holder can buy or sell the underlying asset. Also called Exercise Price.",week:"W7 Options"},
+  {term:"Expiry Date",def:"The last date on which the option can be exercised.",week:"W7 Options"},
+  {term:"Call Option",def:"Gives the holder the RIGHT to BUY the underlying asset at the strike price. Profitable when spot price rises above strike price.",week:"W7 Options"},
+  {term:"Put Option",def:"Gives the holder the RIGHT to SELL the underlying asset at the strike price. Profitable when spot price falls below strike price.",week:"W7 Options"},
+  {term:"Option Holder (Buyer)",def:"The party who pays the premium and receives the right. Maximum loss = premium paid.",week:"W7 Options"},
+  {term:"Option Writer (Seller)",def:"The party who receives the premium and takes on the obligation. Can face potentially unlimited losses (especially uncovered call writers).",week:"W7 Options"},
+  {term:"American Option",def:"Can be exercised at ANY time before or at the expiry date.",week:"W7 Options"},
+  {term:"European Option",def:"Can ONLY be exercised at the expiry date (not before).",week:"W7 Options"},
+  {term:"Covered Option",def:"When the writer already owns the security they agreed to deliver. Lower risk.",week:"W7 Options"},
+  {term:"Naked/Uncovered Option",def:"When the writer does NOT own the security they agreed to deliver. Very high risk — potentially unlimited losses.",week:"W7 Options"},
+  {term:"In the Money (Call)",def:"Stock price > Strike price. Profitable to exercise.",week:"W7 Options"},
+  {term:"At the Money",def:"Stock price = Strike price. Break-even point.",week:"W7 Options"},
+  {term:"Out of the Money (Call)",def:"Stock price < Strike price. Not profitable to exercise.",week:"W7 Options"},
+  {term:"In the Money (Put)",def:"Stock price < Strike price. Profitable to exercise.",week:"W7 Options"},
+  {term:"Out of the Money (Put)",def:"Stock price > Strike price. Not profitable to exercise.",week:"W7 Options"},
+  {term:"Buy Call Strategy",def:"Use when you believe the stock price will RISE. Max loss = premium. Unlimited potential gain.",week:"W7 Options"},
+  {term:"Write Call Strategy",def:"Use when you believe the stock price will DROP. Max gain = premium received. Potentially unlimited loss.",week:"W7 Options"},
+  {term:"Buy Put Strategy",def:"Use when you believe the stock price will DROP. Max loss = premium. Gain if price falls below strike.",week:"W7 Options"},
+  {term:"Write Put Strategy",def:"Use when you believe the stock price will RISE. Max gain = premium received.",week:"W7 Options"},
+  {term:"Covered Call",def:"Buy the underlying shares AND write a call option on those same shares. Generates income (premium). Risk: must sell shares at strike price if exercised.",week:"W7 Options"},
+  {term:"Married Put",def:"Buy the underlying shares AND buy a put option on those same shares. Acts as insurance/price floor. Risk: lose the premium if price doesn't fall.",week:"W7 Options"},
+  {term:"Long Straddle",def:"Buy BOTH a call and a put with the same strike price and expiry date. Use when you believe the price will move significantly but don't know which direction. Max loss = cost of both premiums.",week:"W7 Options"},
+  {term:"Protective Collar",def:"Own the shares + buy an out-of-the-money put + write an out-of-the-money call. Protects against downside while capping upside.",week:"W7 Options"},
+  // WEEK 7 - Swaps
+  {term:"Swap",def:"An agreement where two parties exchange payment obligations on two underlying financial liabilities that are equal in principal but differ in payment patterns.",week:"W7 Swaps"},
+  {term:"Interest Rate Swap",def:"One stream of future interest payments is exchanged for another based on a specified principal amount. Typically fixed rate exchanged for floating rate (or vice versa).",week:"W7 Swaps"},
+  {term:"Notional Principal",def:"The principal amount used to calculate swap payments. It is NEVER actually exchanged — only the NET difference in payments changes hands.",week:"W7 Swaps"},
+  {term:"Swap Dealer",def:"Acts as counterparty to both sides of a swap. Operates a 'book' of swaps kept as closely matched as possible to minimise market risk.",week:"W7 Swaps"},
+  {term:"Credit Default Swap (CDS)",def:"A contract where the buyer pays a premium to a seller who agrees to compensate the buyer if a third party defaults. Essentially insurance against credit risk.",week:"W7 Swaps"},
+  {term:"Protection Buyer (CDS)",def:"The party that pays the CDS premium and receives payment if a credit event occurs. Mostly banks and financial institutions.",week:"W7 Swaps"},
+  {term:"Protection Seller (CDS)",def:"The party that receives the CDS premium and pays out if a credit event occurs. Could be hedge funds or insurance companies.",week:"W7 Swaps"},
+  {term:"CDS Spread",def:"The annual premium the protection buyer pays, expressed as a percentage of the notional amount.",week:"W7 Swaps"},
+  {term:"Credit Event",def:"The trigger for CDS payment: failure to pay, restructuring, or bankruptcy.",week:"W7 Swaps"},
+  {term:"ISDA",def:"International Swaps and Derivatives Association — sets standard terms and conditions for CDS contracts.",week:"W7 Swaps"},
+  // WEEK 8 - FX
+  {term:"Exchange Rate",def:"The rate at which one nation's currency can be exchanged for another's.",week:"W8 FX"},
+  {term:"Base Currency",def:"The FIRST currency in a currency pair quote. The price is expressed in terms of how much of the second currency you get per one unit of the base currency.",week:"W8 FX"},
+  {term:"Terms Currency",def:"The SECOND currency in a currency pair. The amount of terms currency per one unit of base currency.",week:"W8 FX"},
+  {term:"Direct Quote",def:"When the BASE currency is FOREIGN and the TERMS currency is DOMESTIC. Tells you the price of the foreign currency in domestic terms.",week:"W8 FX"},
+  {term:"Indirect Quote",def:"When the BASE currency is DOMESTIC. Example: For a NZ person, NZD/EUR is an indirect quote.",week:"W8 FX"},
+  {term:"Bid Price",def:"The price at which the dealer BUYS the BASE currency. Dealer buys base, you sell base.",week:"W8 FX"},
+  {term:"Ask Price (Offer)",def:"The price at which the dealer SELLS the BASE currency. Dealer sells base, you buy base.",week:"W8 FX"},
+  {term:"Bid-Ask Spread",def:"The difference between bid and ask prices. How dealers make profit.",week:"W8 FX"},
+  {term:"Currency Appreciation",def:"When a currency increases in value — it costs MORE to buy that currency.",week:"W8 FX"},
+  {term:"Currency Depreciation",def:"When a currency falls in value — it costs LESS to buy that currency.",week:"W8 FX"},
+  {term:"Cross-Currency Triangulation",def:"Calculating an exchange rate between two currencies using their rates against a third currency (usually USD). E.g., NZD/EUR = NZD/USD ÷ EUR/USD.",week:"W8 FX"},
+  {term:"Spot Market (FX)",def:"Where foreign exchange is bought/sold for immediate delivery at the current (spot) price.",week:"W8 FX"},
+  {term:"Forward Market (FX)",def:"Where parties agree to exchange currencies at a set rate on a future date. Used to lock in an exchange rate and eliminate currency risk.",week:"W8 FX"},
+  {term:"FX Swap",def:"One currency is purchased in a spot transaction and subsequently sold in a forward transaction (or vice versa). Makes up 51% of all FX trading.",week:"W8 FX"},
+  {term:"Purchasing Power Parity (PPP)",def:"The theory that exchange rates will move to levels at which the cost of goods in any country is the same in the same currency. Often doesn't hold in practice due to trade barriers.",week:"W8 FX"},
+  {term:"Bretton Woods System",def:"International monetary system 1944–1971 where countries fixed exchange rates relative to the USD, and the USD was convertible to gold at $35/ounce. Ended when Nixon ended gold convertibility on August 15, 1971.",week:"W8 FX"},
+  {term:"Fixed Exchange Rate",def:"A constant rate of exchange between currencies, maintained by government intervention.",week:"W8 FX"},
+  {term:"Floating Exchange Rate",def:"An exchange rate determined by supply and demand in FX markets. Most currencies since 1971.",week:"W8 FX"},
+  {term:"Managed Float",def:"An exchange rate allowed to float within a defined band relative to another currency.",week:"W8 FX"},
+  {term:"Crawling Peg",def:"A managed float where the exchange rate appreciates in controlled steps over time.",week:"W8 FX"},
+  {term:"Balance of Payments",def:"A set of accounts summarising a country's international balance of trade (exports less imports) and payments to/from foreigners.",week:"W8 FX"},
+  {term:"Current Account",def:"Transactions involving export/import of goods and services or transfers. Three components: (1) net goods, (2) net services, (3) net transfers.",week:"W8 FX"},
+  {term:"Capital Account",def:"Transactions involving purchase or sale of assets. Also called Financial Account.",week:"W8 FX"},
+  {term:"Balance of Trade",def:"The balance in the current account before accounting for transfers (net exports of goods and services).",week:"W8 FX"},
+  {term:"Current Account Deficit",def:"When a country spends more than it earns overseas. NZ has run a current account deficit every year since at least 2003.",week:"W8 FX"},
+  {term:"Dollarization",def:"When a country adopts the USD as its medium of exchange to obtain a stable widely-used currency.",week:"W8 FX"},
+  {term:"Eurodollars",def:"USD-denominated deposits held in banks OUTSIDE the United States. Nothing to do with the Euro currency!",week:"W8 FX"},
+  {term:"Eurocurrency Market",def:"Any currency held in banks outside its country of origin. E.g., Euroyen = Yen deposits outside Japan.",week:"W8 FX"},
+  {term:"LIBOR",def:"London Interbank Offered Rate — was the world's most widely used benchmark for short-term interest rates until 2023. Based on estimates submitted by banks, making it vulnerable to manipulation.",week:"W8 FX"},
+  {term:"LIBOR Scandal",def:"In 2012, revealed that banks had been submitting false borrowing cost estimates to manipulate LIBOR for trading profits.",week:"W8 FX"},
+  {term:"SOFR",def:"Secured Overnight Financing Rate — replaced USD LIBOR. Based on actual transactions (cost of borrowing USD overnight collateralised by Treasury securities). Published by the New York Fed.",week:"W8 FX"},
+  {term:"SONIA",def:"Sterling Overnight Index Average — replaced Pound LIBOR. Based on actual transactions — the average rate banks pay to borrow GBP overnight.",week:"W8 FX"},
+  {term:"EURIBOR",def:"The rate at which wholesale funds in EUR can be obtained by EU banks in the unsecured money market. Published for 5 maturities. Total financial instruments referencing it exceeds €100 trillion.",week:"W8 FX"},
+  {term:"Eurobond",def:"A bond denominated in a currency other than that of the market where it is issued. Lower disclosure requirements than domestic issues.",week:"W8 FX"},
+  // WEEK 9 - Central Banks
+  {term:"Monetary Policy",def:"The management of short-term interest rates to achieve economic objectives.",week:"W9 Central Banks"},
+  {term:"RBA",def:"Reserve Bank of Australia — responsible for monetary policy, payments system, and financial system stability. Three boards since March 2025: Monetary Policy Board, Payments System Board, Governance Board.",week:"W9 Central Banks"},
+  {term:"RBNZ",def:"Reserve Bank of New Zealand — responsible for monetary policy, systemic stability AND prudential regulation. Governed by the RBNZ Act 2021.",week:"W9 Central Banks"},
+  {term:"OCR",def:"Official Cash Rate — NZ's equivalent of Australia's cash rate. The interest rate at which banks borrow/lend overnight. Set by the RBNZ MPC. Underpins all other interest rates in the economy.",week:"W9 Central Banks"},
+  {term:"Cash Rate (Australia)",def:"The unsecured overnight interbank lending rate. The primary cost of short-term loanable funds. Set by the RBA's Monetary Policy Board.",week:"W9 Central Banks"},
+  {term:"APRA",def:"Australian Prudential Regulation Authority — controls risk-taking of financial institutions (banks, insurance, super funds). Separate from RBA.",week:"W9 Central Banks"},
+  {term:"ASIC",def:"Australian Securities and Investment Commission — regulates financial markets, instruments, and protects consumers. Separate from RBA.",week:"W9 Central Banks"},
+  {term:"FOMC",def:"Federal Open Market Committee — sets US monetary policy. 12 voting members: 7 Board of Governors + NY Fed president + 4 rotating regional Fed presidents. Current Chair: Jerome Powell.",week:"W9 Central Banks"},
+  {term:"ECB",def:"European Central Bank — responsible for monetary policy for the Eurozone (21 countries). Part of the Eurosystem.",week:"W9 Central Banks"},
+  {term:"BIS",def:"Bank for International Settlements — international monetary authority in Basel, Switzerland. A facilitator of central banking cooperation and banker to central banks.",week:"W9 Central Banks"},
+  {term:"M1 (Narrow Money)",def:"Coins + notes + current bank accounts. Money used to buy things (medium of exchange).",week:"W9 Central Banks"},
+  {term:"M3",def:"M1 + all other bank deposits of the private non-bank sector (savings, money market deposits).",week:"W9 Central Banks"},
+  {term:"Monetary Base (M0)",def:"Money created directly by the Reserve Bank: (1) physical currency (notes and coins) + (2) settlement cash balances (ESA deposits).",week:"W9 Central Banks"},
+  {term:"Exchange Settlement Accounts (ESA)",def:"Accounts held by commercial banks at the central bank. Used to settle transactions between banks. The balance is 'money' for banks.",week:"W9 Central Banks"},
+  {term:"Exchange Settlement Funds (ESF)",def:"The funds held in Exchange Settlement Accounts (ESAs).",week:"W9 Central Banks"},
+  {term:"Open Market Operations",def:"The RBA/RBNZ buying or selling government securities in the money market to maintain the cash rate target. Repos are commonly used.",week:"W9 Central Banks"},
+  {term:"Money Multiplier",def:"The process by which an initial injection of base money creates a much larger increase in broad money through successive rounds of lending and depositing.",week:"W9 Central Banks"},
+  {term:"Unsterilised FX Intervention",def:"When the RBA/RBNZ enters the forex market and does NOT offset the monetary effects. Affects both exchange rate AND money supply.",week:"W9 Central Banks"},
+  {term:"Sterilised FX Intervention",def:"When the RBA/RBNZ enters the forex market and DOES offset the monetary effects through opposite open market operations. Affects exchange rate but neutralises effect on money supply.",week:"W9 Central Banks"},
+  {term:"Forward Guidance",def:"Communication from a central bank about the likely future course of monetary policy. Influences long-term interest rates by shaping expectations.",week:"W9 Central Banks"},
+  {term:"Delphic Forward Guidance",def:"General statements or forecasts about the likely future direction of policy. Non-binding.",week:"W9 Central Banks"},
+  {term:"Odyssean Forward Guidance",def:"Explicit commitments about the future path of policy. More powerful but limits flexibility. Credibility is crucial.",week:"W9 Central Banks"},
+  {term:"LSAPs (QE)",def:"Large-Scale Asset Purchases / Quantitative Easing — central bank purchases of domestic government bonds to lower interest rates and flatten the yield curve. Affects LONGER-term rates (2+ years).",week:"W9 Central Banks"},
+  {term:"Funding for Lending",def:"Provision of collateralised long-term loans to banks at the OCR to reduce bank funding costs and lower retail interest rates.",week:"W9 Central Banks"},
+  // WEEK 10 - Commercial Banks
+  {term:"Balance Sheet Equation",def:"Total Assets = Total Liabilities + Capital (Equity)",week:"W10 Banks"},
+  {term:"Primary Reserves",def:"Vault cash + deposits at central bank. Immediately available for liquidity. Australia and NZ do NOT have mandatory reserve requirements.",week:"W10 Banks"},
+  {term:"Secondary Reserves",def:"Treasury bills and short-term government securities. Provide additional liquidity while earning some income.",week:"W10 Banks"},
+  {term:"Bank Capital (Equity)",def:"Share capital + retained profits + reserve accounts. Acts as a cushion against losses. Required by regulators.",week:"W10 Banks"},
+  {term:"Off-Balance-Sheet Activities",def:"Activities that affect bank profits but do NOT appear on the balance sheet: trading financial instruments, fee income, loan commitments.",week:"W10 Banks"},
+  {term:"Line of Credit",def:"Customer can borrow up to a predetermined limit on a short-term basis.",week:"W10 Banks"},
+  {term:"Term Loan",def:"Bank commits to lend a certain amount for more than one year.",week:"W10 Banks"},
+  {term:"Revolving Credit Facility",def:"Customer can borrow, repay, and re-borrow during the loan period.",week:"W10 Banks"},
+  {term:"Contingent Asset",def:"Off-balance-sheet item that MAY become an on-balance-sheet asset (e.g., loan commitments, unrealised gains on derivatives).",week:"W10 Banks"},
+  {term:"Contingent Liability",def:"Off-balance-sheet item that MAY become an obligation (e.g., letters of credit, unrealised losses on derivatives).",week:"W10 Banks"},
+  {term:"Covered Bond",def:"Debt security issued by a bank, collateralised against a pool of assets. If the bank fails, the assets cover bondholder claims. Protected by specific legislation.",week:"W10 Banks"},
+  {term:"ROAA",def:"Rate of Return on Average Assets — Net profit / average total assets. Measures how efficiently management generates profit from assets.",week:"W10 Banks"},
+  {term:"ROAE",def:"Rate of Return on Average Equity — Net profit / average equity. Measures return to shareholders.",week:"W10 Banks"},
+  {term:"Net Interest Margin (NIM)",def:"(Interest income − Interest expense) / Total assets. Measures profitability of lending activities.",week:"W10 Banks"},
+  {term:"Interest Rate Risk",def:"The risk that unexpected rate changes cause a bank's realised yield to differ from expected.",week:"W10 Banks"},
+  {term:"Repricing",def:"When an interest rate on a deposit or loan changes (resets to market rate).",week:"W10 Banks"},
+  {term:"RSA (Rate-Sensitive Assets)",def:"Assets that reprice quickly: floating-rate loans, variable-rate mortgages, short-term securities.",week:"W10 Banks"},
+  {term:"RSL (Rate-Sensitive Liabilities)",def:"Liabilities that reprice quickly: floating-rate deposits, short-term borrowings.",week:"W10 Banks"},
+  {term:"Maturity Gap Analysis",def:"Gap = RSA − RSL. Positive gap: earnings rise when rates rise. Negative gap: earnings fall when rates rise.",week:"W10 Banks"},
+  {term:"Duration Gap Analysis",def:"More precise measure of interest rate risk. Duration gap = Duration of Assets − (MVL/MVA × Duration of Liabilities).",week:"W10 Banks"},
+  {term:"Value at Risk (VaR)",def:"Statistical model estimating maximum potential loss within a given time period at a given confidence level. 'There is X% chance that the portfolio will lose at least $Y over period Z.'",week:"W10 Banks"},
+  {term:"Micro Hedging",def:"Hedging a specific transaction or using matched funding (fixed-rate loans funded with same-maturity deposits).",week:"W10 Banks"},
+  {term:"Macro Hedging",def:"Hedging overall balance sheet risk using financial futures, options on futures, and interest rate swaps.",week:"W10 Banks"},
+  {term:"Basel I",def:"1988 — Introduced risk-weighted assets (RWA) and set minimum capital levels as a % of RWA.",week:"W10 Banks"},
+  {term:"Basel II",def:"2004 — Required sophisticated models to measure credit, market and operational risk. Problem: too complex, too volatile. Did NOT prevent the 2008 financial crisis.",week:"W10 Banks"},
+  {term:"Basel III",def:"Developed in response to the 2007-09 financial crisis. Distinguishes between CET1, Tier 1, and Tier 2 capital with stricter requirements.",week:"W10 Banks"},
+  {term:"Risk-Weighted Assets (RWA)",def:"Bank assets weighted according to their risk level. Used to calculate Basel capital ratios.",week:"W10 Banks"},
+  {term:"Common Equity Tier 1 (CET1)",def:"Highest quality capital (ordinary shares + retained earnings). Must be permanently available to absorb losses. Minimum: 4.5% of RWA.",week:"W10 Banks"},
+  {term:"Liquidity Coverage Ratio (LCR)",def:"Banks must hold sufficient high-quality liquid assets to survive a 30-day stressed funding scenario.",week:"W10 Banks"},
+  {term:"D-SIBs",def:"Domestic Systemically Important Banks in NZ — ANZ, ASB, BNZ, Westpac. Must hold a Prudential Capital Buffer (PCB) of 5.5% CET1 from July 2025.",week:"W10 Banks"},
+  {term:"CAMELS Rating System",def:"Used to assess overall quality of a bank's condition: Capital adequacy, Asset quality, Management, Earnings, Liquidity, Sensitivity to market risk. Rated 1 (best) to 5 (worst).",week:"W10 Banks"},
+  // WEEK 11 - Nonbank
+  {term:"Non-Bank Deposit Taker (NBDT)",def:"Any entity other than a registered bank that makes an NBDT-regulated offer of debt securities and carries on the business of borrowing and lending money. Licensed and supervised by the RBNZ.",week:"W11 Nonbanks"},
+  {term:"Building Societies",def:"Mutual entities specialising in mortgage loans funded from deposits. In NZ, incorporated under the Building Societies Act 1965. Non-bank deposit takers.",week:"W11 Nonbanks"},
+  {term:"Credit Unions",def:"Member-owned co-operative financial organisations providing savings and loan facilities. Members must share a common bond. In NZ, incorporated under the Friendly Societies and Credit Unions Act 1982.",week:"W11 Nonbanks"},
+  {term:"Finance Companies",def:"Specialise in consumer and business finance and leasing. In NZ: deposit-taking (need RBNZ license) and non-deposit-taking. RBNZ does NOT regulate non-deposit-taking finance companies.",week:"W11 Nonbanks"},
+  {term:"Deposit Compensation Scheme (DCS)",def:"NZ scheme covering customers of banks, building societies, credit unions and licensed finance companies for up to NZ$100,000 per customer per deposit taker if the institution fails.",week:"W11 Nonbanks"},
+  {term:"Insurance",def:"The transfer of a pure risk to an entity that pools the risk of loss and provides payment if a loss occurs.",week:"W11 Nonbanks"},
+  {term:"Pure Risk",def:"A situation with two outcomes: loss or no loss. (Insurable.)",week:"W11 Nonbanks"},
+  {term:"Speculative Risk",def:"A situation with three outcomes: loss, no loss, or gain. (Not insurable.)",week:"W11 Nonbanks"},
+  {term:"Objective Risk",def:"The risk insurers face once they accept risk — the deviation between actual losses and expected losses.",week:"W11 Nonbanks"},
+  {term:"Law of Large Numbers",def:"As the number of insured increases, the deviation between actual and expected results declines. This is how insurance reduces objective risk.",week:"W11 Nonbanks"},
+  {term:"Adverse Selection",def:"A market failure where people with higher risk are more likely to seek insurance, while concealing that higher risk. Occurs BEFORE the contract.",week:"W11 Nonbanks"},
+  {term:"Moral Hazard",def:"The risk that having insurance causes the insured to behave more recklessly because they don't bear the full consequences of their actions. Occurs AFTER the contract.",week:"W11 Nonbanks"},
+  {term:"Reinsurance",def:"Insurers shift some of their insured risk to another insurance company.",week:"W11 Nonbanks"},
+  {term:"Investment Fund (Managed Fund)",def:"A collective investment vehicle that gathers funds from many investors to invest in securities.",week:"W11 Nonbanks"},
+  {term:"Closed-End Fund",def:"Sells a fixed number of shares to the public and then operates with that fixed number. Shares trade on secondary markets.",week:"W11 Nonbanks"},
+  {term:"Open-End Fund (Mutual Fund)",def:"Continuously issues new units to new investors and redeems units when investors withdraw. Manager creates/redeems units as needed.",week:"W11 Nonbanks"},
+  {term:"ETF (Exchange-Traded Fund)",def:"A basket of securities that trades on an exchange like a stock. Prices fluctuate throughout the day (unlike mutual funds which trade once daily). Lower expense ratios.",week:"W11 Nonbanks"},
+  {term:"Hedge Fund",def:"Investment pools using aggressive strategies and analytical techniques to earn above-market returns while reducing risk. High minimum investment ($100k–$20m). Investors must commit money for long periods.",week:"W11 Nonbanks"},
+  {term:"KiwiSaver",def:"NZ savings scheme operational from July 2, 2007. Normally accessible only after age 65, but since 2015 can be used as a deposit for a first home.",week:"W11 Nonbanks"},
+  {term:"Investment Bank",def:"A bank that specialises in helping businesses and governments sell new securities on primary markets, and makes secondary markets for securities as brokers and dealers. Does NOT accept deposits or make traditional loans.",week:"W11 Nonbanks"},
+  {term:"Universal Bank",def:"An institution that can accept deposits, make loans, underwrite securities, engage in brokerage, and sell other financial services (like insurance).",week:"W11 Nonbanks"},
+  {term:"IPO (Initial Public Offering)",def:"When a company offers securities to the general public for the FIRST time.",week:"W11 Nonbanks"},
+  {term:"Seasoned Offering",def:"When a company already has similar securities trading and issues more. Also called Secondary Equity Offering.",week:"W11 Nonbanks"},
+  {term:"Underwriting Syndicate",def:"A group of investment banks that share the risk of underwriting a large issue.",week:"W11 Nonbanks"},
+  {term:"Best-Efforts Basis",def:"Investment banker tries to sell the securities but does NOT guarantee to purchase them. Less risk for the banker.",week:"W11 Nonbanks"},
+  {term:"Venture Capital",def:"Equity financing provided after founders' funds are exhausted but before an IPO. Typically requires substantial control over management and a share in capital appreciation.",week:"W11 Nonbanks"},
+  {term:"Fintech",def:"Financial technology. New technology to improve and automate delivery of financial services. Applications: cryptocurrency, digital lending, payments, blockchain, digital wealth management.",week:"W11 Nonbanks"},
+  // WEEK 12 - Crypto & CBDC
+  {term:"Cryptocurrency",def:"A digital asset designed to work as a medium of exchange that uses strong cryptography to secure financial transactions. Decentralised, not subject to government or financial institution control. Immutable and transparent.",week:"W12 Crypto"},
+  {term:"Bitcoin",def:"The most well-known cryptocurrency. Distributed, decentralised digital currency system released by Satoshi Nakamoto in 2008. Maximum supply: 21 million bitcoins.",week:"W12 Crypto"},
+  {term:"Blockchain",def:"A distributed digital ledger that records transactions across a network of computers. Each block contains multiple transactions. Once added, blocks cannot be altered. An append-only sequential data structure.",week:"W12 Crypto"},
+  {term:"Hashing",def:"A process that takes any input and produces a fixed-length output (the hash). Irreversible. No two different inputs can produce the same hash. Used as a digital fingerprint.",week:"W12 Crypto"},
+  {term:"Private Key (Crypto)",def:"Your secret password. Used to sign Bitcoin transactions. Proves you own the Bitcoin and authorises payments. NEVER shared.",week:"W12 Crypto"},
+  {term:"Public Key (Crypto)",def:"Derived from the private key. Shared with others. Used by others to verify signatures and send funds. Its hash is known as a Bitcoin address.",week:"W12 Crypto"},
+  {term:"Digital Signature",def:"Created using the sender's private key and transaction data. Proves ownership of funds being spent and ensures the transaction hasn't been tampered with.",week:"W12 Crypto"},
+  {term:"Proof of Work",def:"The computational process miners complete to validate Bitcoin transactions and add new blocks to the blockchain. Difficult to do but easy to verify.",week:"W12 Crypto"},
+  {term:"Mining (Bitcoin)",def:"The process of validating Bitcoin transactions. Miners earn newly created Bitcoin as reward. Currently 6.25 BTC per block (halved every 210,000 blocks, approximately every 4 years).",week:"W12 Crypto"},
+  {term:"Double Spending Problem",def:"The risk that a digital currency could be spent twice. Bitcoin solves this by broadcasting transactions to all nodes in the P2P network.",week:"W12 Crypto"},
+  {term:"Pseudonymity (Bitcoin)",def:"Bitcoin provides pseudonymity (not full anonymity). All transactions remain on the blockchain indefinitely.",week:"W12 Crypto"},
+  {term:"Fiat Money",def:"Money with no intrinsic value (notes and coins) that is legal tender by law. Can be used to pay taxes.",week:"W12 Crypto"},
+  {term:"Stablecoin",def:"A cryptocurrency designed to maintain a stable value (typically 1:1 with USD). Examples: USDT (Tether), USDC, DAI.",week:"W12 Crypto"},
+  {term:"CBDC",def:"Central Bank Digital Currency — a digital form of a country's fiat currency issued by the central bank. A central bank liability.",week:"W12 Crypto"},
+  {term:"Retail CBDC",def:"For use by households and firms (the general public).",week:"W12 Crypto"},
+  {term:"Wholesale CBDC",def:"For use by financial institutions only.",week:"W12 Crypto"},
+  {term:"Token-Based CBDC",def:"Ownership = holding the token (like cash). No account needed. More anonymous but higher money laundering risk.",week:"W12 Crypto"},
+  {term:"Account-Based CBDC",def:"Ownership = verified identity. Requires account and KYC (Know Your Customer). More traceable, easier to regulate.",week:"W12 Crypto"},
+  {term:"DLT (Distributed Ledger Technology)",def:"Shared system like blockchain. Allows secure, real-time, automated transactions. Used in wholesale CBDC.",week:"W12 Crypto"},
+];
+
+// Week categories for filter
+const WEEKS = ["All","W7 Options","W7 Swaps","W8 FX","W9 Central Banks","W10 Banks","W11 Nonbanks","W12 Crypto"];
+
+// ===================== STATE =====================
+let xp = parseInt(localStorage.getItem('finc_xp')||'0');
+let bestStreak = parseInt(localStorage.getItem('finc_streak')||'0');
+let fcUnknown = JSON.parse(localStorage.getItem('finc_unknown')||'[]');
+
+function saveState() {
+  localStorage.setItem('finc_xp', xp);
+  localStorage.setItem('finc_streak', bestStreak);
+  localStorage.setItem('finc_unknown', JSON.stringify(fcUnknown));
+}
+
+function addXP(amount, x, y) {
+  xp += amount;
+  saveState();
+  updateHomeStats();
+  // Popup
+  const el = document.createElement('div');
+  el.className = 'xp-popup';
+  el.textContent = `+${amount} XP`;
+  el.style.left = (x||window.innerWidth/2) + 'px';
+  el.style.top = (y||window.innerHeight/2) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+function updateHomeStats() {
+  document.getElementById('home-xp').textContent = xp;
+  document.getElementById('home-streak').textContent = bestStreak;
+}
+
+function getFilteredTerms(filterWeek) {
+  if (!filterWeek || filterWeek === 'All') return [...ALL_TERMS];
+  return ALL_TERMS.filter(t => t.week === filterWeek);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function showToast(msg, type='info', dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ===================== NAVIGATION =====================
+function goHome() {
+  // Stop timers
+  if (speedTimer) { clearInterval(speedTimer); speedTimer = null; }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('home').classList.add('active');
+  updateHomeStats();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function buildFilterBar(containerId, activeWeek, callback) {
+  const bar = document.getElementById(containerId);
+  bar.innerHTML = '';
+  WEEKS.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (w === activeWeek ? ' active' : '');
+    btn.textContent = w;
+    btn.onclick = () => callback(w);
+    bar.appendChild(btn);
+  });
+}
+
+// ===================== PARTICLES =====================
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  function makeParticles() {
+    particles = Array.from({length:50}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*2+0.5,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+      a: Math.random()
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,212,255,${p.a*0.3})`;
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.x<0) p.x=W; if (p.x>W) p.x=0;
+      if (p.y<0) p.y=H; if (p.y>H) p.y=0;
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); makeParticles(); draw();
+  window.addEventListener('resize', () => { resize(); makeParticles(); });
+})();
+
+// ===================== FLASHCARDS =====================
+let fcCards = [], fcIndex = 0, fcFlipped = false, fcFilter = 'All';
+
+function startFlashcards(filter) {
+  fcFilter = filter || 'All';
+  fcCards = shuffle(getFilteredTerms(fcFilter));
+  fcIndex = 0; fcFlipped = false;
+  buildFilterBar('fc-filter-bar', fcFilter, w => startFlashcards(w));
+  showScreen('flashcard-screen');
+  renderFC();
+}
+
+function renderFC() {
+  if (fcCards.length === 0) {
+    showToast('No cards for this filter!', 'error');
+    return;
+  }
+  const card = fcCards[fcIndex];
+  document.getElementById('fc-counter').textContent = `Card ${fcIndex+1} of ${fcCards.length}`;
+  document.getElementById('fc-progress').style.width = ((fcIndex)/fcCards.length*100)+'%';
+  document.getElementById('fc-week').textContent = card.week;
+  document.getElementById('fc-week-back').textContent = card.week;
+  document.getElementById('fc-term').textContent = card.term;
+  document.getElementById('fc-definition').textContent = card.def;
+  fcFlipped = false;
+  const inner = document.getElementById('fc-inner');
+  inner.style.transition = 'none';
+  document.getElementById('fc-card').classList.remove('flipped');
+  setTimeout(() => inner.style.transition = '', 50);
+  document.getElementById('fc-actions').style.display = 'none';
+  updateXPBar();
+}
+
+function flipCard() {
+  const el = document.getElementById('fc-card');
+  fcFlipped = !fcFlipped;
+  el.classList.toggle('flipped', fcFlipped);
+  if (fcFlipped) {
+    document.getElementById('fc-actions').style.display = 'flex';
+    document.getElementById('fc-actions').style.justifyContent = 'center';
+  }
+}
+
+function markCard(known) {
+  const card = fcCards[fcIndex];
+  if (known) {
+    fcUnknown = fcUnknown.filter(t => t !== card.term);
+    addXP(5);
+    showToast('✓ Marked as known! +5 XP', 'success', 1500);
+  } else {
+    if (!fcUnknown.includes(card.term)) fcUnknown.push(card.term);
+    showToast('Added to practice list', 'error', 1500);
+  }
+  saveState();
+  fcIndex++;
+  if (fcIndex >= fcCards.length) {
+    showFCComplete();
+  } else {
+    renderFC();
+  }
+}
+
+function shuffleFC() {
+  fcCards = shuffle(fcCards);
+  fcIndex = 0;
+  renderFC();
+  showToast('🔀 Shuffled!', 'info', 1200);
+}
+
+function resetUnknown() {
+  if (fcUnknown.length === 0) { showToast('No practice cards — you know them all! 🎉', 'success'); return; }
+  const unknown = ALL_TERMS.filter(t => fcUnknown.includes(t.term));
+  fcCards = shuffle(unknown);
+  fcIndex = 0;
+  renderFC();
+  showToast(`📚 Reviewing ${unknown.length} practice cards`, 'info');
+}
+
+function showFCComplete() {
+  addXP(20);
+  showResults('🎉','Deck Complete!',
+    `You reviewed all ${fcCards.length} cards.`,
+    [{num: fcCards.length, label:'Cards Done'},{num:fcUnknown.length,label:'Need Practice'},{num:20,label:'XP Earned'}],
+    [{text:'Review Again', action:'startFlashcards()'},{text:'Home', action:'goHome()'}]
+  );
+}
+
+function updateXPBar() {
+  const level = Math.floor(xp/100);
+  const pct = (xp%100);
+  document.querySelectorAll('.xp-fill').forEach(el => el.style.width = pct+'%');
+  document.querySelectorAll('[id*="xp-num"]').forEach(el => el.textContent = xp);
+}
+
+// ===================== QUIZ =====================
+let quizQ = [], quizIdx = 0, quizScore = 0, quizStreak = 0, quizFilter = 'All', quizAnswered = false;
+
+function startQuiz(filter) {
+  quizFilter = filter || 'All';
+  const pool = getFilteredTerms(quizFilter);
+  if (pool.length < 4) { showToast('Need at least 4 terms for quiz!', 'error'); return; }
+  quizQ = buildQuizQuestions(pool, 20);
+  quizIdx = 0; quizScore = 0; quizStreak = 0; quizAnswered = false;
+  buildFilterBar('quiz-filter-bar', quizFilter, w => startQuiz(w));
+  showScreen('quiz-screen');
+  renderQuiz();
+}
+
+function buildQuizQuestions(pool, count) {
+  const shuffled = shuffle(pool).slice(0, Math.min(count, pool.length));
+  return shuffled.map(item => {
+    // Question types
+    const type = Math.random() < 0.5 ? 'def2term' : 'term2def';
+    let question, answer, distractors;
+    if (type === 'def2term') {
+      question = `What term matches this definition?\n\n"${item.def}"`;
+      answer = item.term;
+      distractors = shuffle(pool.filter(p => p.term !== item.term)).slice(0,3).map(p=>p.term);
+    } else {
+      question = `What is the definition of:\n\n"${item.term}"`;
+      answer = item.def;
+      distractors = shuffle(pool.filter(p => p.def !== item.def)).slice(0,3).map(p=>p.def);
+    }
+    const options = shuffle([answer, ...distractors]);
+    return { question, answer, options, week: item.week };
+  });
+}
+
+function renderQuiz() {
+  const q = quizQ[quizIdx];
+  document.getElementById('quiz-qnum').textContent = `Question ${quizIdx+1} of ${quizQ.length}`;
+  document.getElementById('quiz-question').textContent = q.question;
+  document.getElementById('quiz-score').textContent = quizScore;
+  document.getElementById('quiz-streak').textContent = quizStreak;
+  document.getElementById('quiz-combo').textContent = quizStreak >= 3 ? `🔥 ${quizStreak}x Combo! Bonus points!` : '';
+  document.getElementById('quiz-feedback').style.display = 'none';
+  document.getElementById('quiz-next').style.display = 'none';
+  quizAnswered = false;
+
+  const optEl = document.getElementById('quiz-options');
+  optEl.innerHTML = '';
+  q.options.forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.onclick = () => answerQuiz(opt, btn, q.answer);
+    optEl.appendChild(btn);
+  });
+}
+
+function answerQuiz(selected, btn, answer) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const correct = selected === answer;
+  const fb = document.getElementById('quiz-feedback');
+
+  document.querySelectorAll('.quiz-option').forEach(el => {
+    el.classList.add('locked');
+    if (el.textContent === answer) el.classList.add('correct');
+  });
+
+  if (correct) {
+    btn.classList.add('correct');
+    quizStreak++;
+    if (quizStreak > bestStreak) { bestStreak = quizStreak; saveState(); }
+    const bonus = quizStreak >= 3 ? quizStreak : 0;
+    const pts = 10 + bonus;
+    quizScore += pts;
+    addXP(pts, btn.getBoundingClientRect().left, btn.getBoundingClientRect().top);
+    fb.className = 'quiz-feedback feedback-correct';
+    fb.textContent = quizStreak >= 3 ? `✅ Correct! +${pts} pts (${quizStreak}x combo!)` : `✅ Correct! +${pts} pts`;
+    playTone(520, 0.1);
+  } else {
+    btn.classList.add('wrong');
+    quizStreak = 0;
+    fb.className = 'quiz-feedback feedback-wrong';
+    fb.textContent = `❌ Incorrect. The answer was: ${answer}`;
+    playTone(200, 0.1);
+  }
+
+  fb.style.display = 'block';
+  document.getElementById('quiz-score').textContent = quizScore;
+  document.getElementById('quiz-streak').textContent = quizStreak;
+  document.getElementById('quiz-combo').textContent = quizStreak >= 3 ? `🔥 ${quizStreak}x Combo!` : '';
+  document.getElementById('quiz-next').style.display = 'block';
+}
+
+function nextQuestion() {
+  quizIdx++;
+  if (quizIdx >= quizQ.length) {
+    showResults('🏆','Quiz Complete!',`Score: ${quizScore} points`,
+      [{num:quizScore,label:'Points'},{num:quizStreak,label:'End Streak'},{num:quizQ.length,label:'Questions'}],
+      [{text:'Play Again',action:'startQuiz()'},{text:'Home',action:'goHome()'}]
+    );
+  } else {
+    renderQuiz();
+  }
+}
+
+// ===================== MATCH GAME =====================
+let matchFilter = 'All', matchSelected = null, matchMatched = [], matchWrong = 0, matchStart = null;
+
+function startMatch(filter) {
+  matchFilter = filter || 'All';
+  const pool = shuffle(getFilteredTerms(matchFilter)).slice(0,8);
+  matchSelected = null; matchMatched = []; matchWrong = 0; matchStart = Date.now();
+  buildFilterBar('match-filter-bar', matchFilter, w => startMatch(w));
+  showScreen('match-screen');
+  document.getElementById('match-score').textContent = 0;
+  document.getElementById('match-total').textContent = pool.length;
+
+  const terms = pool.map((p,i) => ({id:i, text:p.term, type:'term', pair:i}));
+  const defs = shuffle(pool.map((p,i) => ({id:i+100, text:p.def, type:'def', pair:i})));
+
+  const termCol = document.getElementById('match-terms');
+  const defCol = document.getElementById('match-defs');
+  termCol.innerHTML = ''; defCol.innerHTML = '';
+
+  terms.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = item.text;
+    el.dataset.id = item.id;
+    el.dataset.pair = item.pair;
+    el.dataset.type = 'term';
+    el.onclick = () => selectMatch(el, item);
+    termCol.appendChild(el);
+  });
+
+  defs.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = item.text;
+    el.dataset.id = item.id;
+    el.dataset.pair = item.pair;
+    el.dataset.type = 'def';
+    el.onclick = () => selectMatch(el, item);
+    defCol.appendChild(el);
+  });
+}
+
+function selectMatch(el, item) {
+  if (el.classList.contains('matched')) return;
+
+  if (!matchSelected) {
+    // First selection
+    if (matchSelected && matchSelected.el === el) return;
+    document.querySelectorAll('.match-item.selected').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    matchSelected = {el, item};
+    return;
+  }
+
+  // Second selection
+  if (matchSelected.el === el) { el.classList.remove('selected'); matchSelected = null; return; }
+  if (matchSelected.item.type === item.type) {
+    // Same type — swap
+    matchSelected.el.classList.remove('selected');
+    el.classList.add('selected');
+    matchSelected = {el, item};
+    return;
+  }
+
+  // Check match
+  if (matchSelected.item.pair === item.pair) {
+    el.classList.add('matched');
+    matchSelected.el.classList.remove('selected');
+    matchSelected.el.classList.add('matched');
+    matchMatched.push(item.pair);
+    addXP(15, el.getBoundingClientRect().left, el.getBoundingClientRect().top);
+    playTone(660, 0.08);
+    document.getElementById('match-score').textContent = matchMatched.length;
+    matchSelected = null;
+    const total = document.querySelectorAll('#match-terms .match-item').length;
+    if (matchMatched.length === total) {
+      const secs = Math.round((Date.now()-matchStart)/1000);
+      showResults('🎯','Board Cleared!',`Matched all ${total} pairs in ${secs}s`,
+        [{num:total,label:'Pairs Matched'},{num:matchWrong,label:'Misses'},{num:total*15,label:'XP Earned'}],
+        [{text:'New Round',action:'startMatch()'},{text:'Home',action:'goHome()'}]
+      );
+    }
+  } else {
+    el.classList.add('wrong');
+    matchSelected.el.classList.add('wrong');
+    matchWrong++;
+    playTone(200, 0.08);
+    setTimeout(() => {
+      el.classList.remove('wrong','selected');
+      matchSelected.el.classList.remove('wrong','selected');
+      matchSelected = null;
+    }, 700);
+    matchSelected = null;
+  }
+}
+
+// ===================== TRUE/FALSE =====================
+let tfCards = [], tfIdx = 0, tfScore = 0, tfStreak = 0, tfFilter = 'All', tfAnswered = false;
+
+function startTrueFalse(filter) {
+  tfFilter = filter || 'All';
+  const pool = getFilteredTerms(tfFilter);
+  tfCards = buildTFQuestions(pool, 30);
+  tfIdx = 0; tfScore = 0; tfStreak = 0; tfAnswered = false;
+  buildFilterBar('tf-filter-bar', tfFilter, w => startTrueFalse(w));
+  showScreen('tf-screen');
+  renderTF();
+}
+
+function buildTFQuestions(pool, count) {
+  const shuffled = shuffle(pool).slice(0, Math.min(count, pool.length));
+  return shuffled.map(item => {
+    const correct = Math.random() < 0.5;
+    let statement;
+    if (correct) {
+      statement = item.def;
+    } else {
+      // Pick a wrong def
+      const wrong = pool.find(p => p.term !== item.term);
+      statement = wrong ? wrong.def : item.def + ' (incorrect detail)';
+    }
+    return { term: item.term, statement, answer: correct, correctDef: item.def };
+  });
+}
+
+function renderTF() {
+  const q = tfCards[tfIdx];
+  document.getElementById('tf-term').textContent = q.term;
+  document.getElementById('tf-statement').textContent = q.statement;
+  document.getElementById('tf-feedback').textContent = '';
+  document.getElementById('tf-score').textContent = tfScore;
+  document.getElementById('tf-streak').textContent = tfStreak;
+  document.getElementById('tf-count').textContent = `${tfIdx+1} of ${tfCards.length}`;
+  document.querySelectorAll('.tf-btn').forEach(b => b.style.opacity = '1');
+  tfAnswered = false;
+}
+
+function answerTF(answer) {
+  if (tfAnswered) return;
+  tfAnswered = true;
+  const q = tfCards[tfIdx];
+  const correct = answer === q.answer;
+  const fb = document.getElementById('tf-feedback');
+
+  if (correct) {
+    tfStreak++;
+    if (tfStreak > bestStreak) { bestStreak = tfStreak; saveState(); }
+    const pts = 5 + (tfStreak >= 3 ? tfStreak : 0);
+    tfScore += pts;
+    addXP(pts);
+    fb.style.color = 'var(--accent3)';
+    fb.textContent = `✅ Correct! +${pts} pts ${tfStreak >= 3 ? '🔥' : ''}`;
+    playTone(520, 0.08);
+  } else {
+    tfStreak = 0;
+    fb.style.color = 'var(--danger)';
+    fb.textContent = `❌ Wrong! Correct def: "${q.correctDef.slice(0,80)}..."`;
+    playTone(200, 0.08);
+  }
+
+  document.getElementById('tf-score').textContent = tfScore;
+  document.getElementById('tf-streak').textContent = tfStreak;
+  document.querySelectorAll('.tf-btn').forEach(b => b.style.opacity = '0.5');
+
+  setTimeout(() => {
+    tfIdx++;
+    if (tfIdx >= tfCards.length) {
+      showResults('⚡','T/F Complete!',`Score: ${tfScore}`,
+        [{num:tfScore,label:'Points'},{num:tfStreak,label:'Final Streak'},{num:tfCards.length,label:'Questions'}],
+        [{text:'Play Again',action:'startTrueFalse()'},{text:'Home',action:'goHome()'}]
+      );
+    } else {
+      renderTF();
+    }
+  }, correct ? 800 : 1500);
+}
+
+// ===================== SPEED BLITZ =====================
+let speedCards = [], speedIdx = 0, speedScore = 0, speedStreak = 0, speedFilter = 'All', speedTimer = null, speedTimeLeft = 10;
+
+function startSpeed(filter) {
+  speedFilter = filter || 'All';
+  speedCards = shuffle(getFilteredTerms(speedFilter));
+  speedIdx = 0; speedScore = 0; speedStreak = 0;
+  buildFilterBar('speed-filter-bar', speedFilter, w => { if(speedTimer) clearInterval(speedTimer); startSpeed(w); });
+  showScreen('speed-screen');
+  renderSpeed();
+}
+
+function renderSpeed() {
+  if (speedIdx >= speedCards.length) {
+    endSpeed();
+    return;
+  }
+  const card = speedCards[speedIdx];
+  const pool = getFilteredTerms(speedFilter);
+  document.getElementById('speed-week').textContent = card.week;
+  document.getElementById('speed-word').textContent = card.term;
+  document.getElementById('speed-score').textContent = speedScore;
+  document.getElementById('speed-streak').textContent = speedStreak;
+
+  // Answers
+  const wrong = shuffle(pool.filter(p => p.def !== card.def)).slice(0,3);
+  const options = shuffle([{def:card.def, correct:true}, ...wrong.map(w=>({def:w.def,correct:false}))]);
+
+  const optEl = document.getElementById('speed-options');
+  optEl.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'speed-option';
+    btn.textContent = opt.def.length > 100 ? opt.def.slice(0,100)+'...' : opt.def;
+    btn.onclick = () => answerSpeed(opt.correct, btn);
+    optEl.appendChild(btn);
+  });
+
+  // Timer
+  speedTimeLeft = 10;
+  clearInterval(speedTimer);
+  updateSpeedTimer();
+  speedTimer = setInterval(() => {
+    speedTimeLeft--;
+    updateSpeedTimer();
+    if (speedTimeLeft <= 0) {
+      clearInterval(speedTimer);
+      speedStreak = 0;
+      showToast('⏱ Time\'s up!', 'error', 1000);
+      setTimeout(() => { speedIdx++; renderSpeed(); }, 1000);
+    }
+  }, 1000);
+}
+
+function updateSpeedTimer() {
+  document.getElementById('speed-timer').textContent = speedTimeLeft;
+  const pct = speedTimeLeft / 10;
+  const circ = 2 * Math.PI * 42;
+  document.getElementById('speed-timer-fill').style.strokeDashoffset = circ * (1-pct);
+  const fill = document.getElementById('speed-timer-fill');
+  fill.style.stroke = speedTimeLeft <= 3 ? 'var(--danger)' : speedTimeLeft <= 6 ? 'var(--warning)' : 'var(--accent)';
+}
+
+function answerSpeed(correct, btn) {
+  clearInterval(speedTimer);
+  if (correct) {
+    btn.classList.add('correct');
+    speedStreak++;
+    if (speedStreak > bestStreak) { bestStreak = speedStreak; saveState(); }
+    const pts = 10 + speedTimeLeft + (speedStreak >= 3 ? 5 : 0);
+    speedScore += pts;
+    addXP(pts, btn.getBoundingClientRect().left, btn.getBoundingClientRect().top);
+    playTone(660, 0.1);
+    document.getElementById('speed-score').textContent = speedScore;
+    document.getElementById('speed-streak').textContent = speedStreak;
+  } else {
+    btn.classList.add('wrong');
+    speedStreak = 0;
+    playTone(180, 0.1);
+  }
+  setTimeout(() => { speedIdx++; renderSpeed(); }, correct ? 600 : 900);
+}
+
+function endSpeed() {
+  clearInterval(speedTimer);
+  showResults('🚀','Speed Blitz Done!',`Total score: ${speedScore}`,
+    [{num:speedScore,label:'Score'},{num:speedStreak,label:'Final Streak'},{num:speedCards.length,label:'Cards'}],
+    [{text:'Play Again',action:'startSpeed()'},{text:'Home',action:'goHome()'}]
+  );
+}
+
+// ===================== CONNECTIONS GAME =====================
+const CONNECT_GROUPS = [
+  { name:"Option Strategies (Bullish)", terms:["Buy Call Strategy","Write Put Strategy","Covered Call","Married Put"], color:0 },
+  { name:"Option Strategies (Bearish)", terms:["Buy Put Strategy","Write Call Strategy","Long Straddle","Protective Collar"], color:1 },
+  { name:"Types of Options", terms:["American Option","European Option","Call Option","Put Option"], color:2 },
+  { name:"In the Money / Out of Money", terms:["In the Money (Call)","Out of the Money (Call)","In the Money (Put)","Out of the Money (Put)"], color:3 },
+  { name:"CDS Parties & Terms", terms:["Protection Buyer (CDS)","Protection Seller (CDS)","CDS Spread","Credit Event"], color:0 },
+  { name:"FX Rate Types", terms:["Fixed Exchange Rate","Floating Exchange Rate","Managed Float","Crawling Peg"], color:1 },
+  { name:"LIBOR Replacements", terms:["SOFR","SONIA","EURIBOR","Exchange Rate"], color:2 },
+  { name:"Money Supply Types", terms:["M1 (Narrow Money)","M3","Monetary Base (M0)","Broad Money"], color:3 },
+  { name:"Australian Regulators", terms:["RBA","APRA","ASIC","FOMC"], color:0 },
+  { name:"Bank Performance Measures", terms:["ROAA","ROAE","Net Interest Margin (NIM)","Maturity Gap Analysis"], color:1 },
+  { name:"Loan Commitment Types", terms:["Line of Credit","Term Loan","Revolving Credit Facility","Covered Bond"], color:2 },
+  { name:"Basel Capital Tiers", terms:["Basel I","Basel II","Basel III","Common Equity Tier 1 (CET1)"], color:3 },
+  { name:"Insurance Concepts", terms:["Pure Risk","Speculative Risk","Adverse Selection","Moral Hazard"], color:0 },
+  { name:"Investment Fund Types", terms:["Closed-End Fund","Open-End Fund (Mutual Fund)","ETF (Exchange-Traded Fund)","Hedge Fund"], color:1 },
+  { name:"Investment Bank Services", terms:["IPO (Initial Public Offering)","Seasoned Offering","Underwriting Syndicate","Best-Efforts Basis"], color:2 },
+  { name:"Bitcoin / Blockchain Concepts", terms:["Blockchain","Proof of Work","Mining (Bitcoin)","Double Spending Problem"], color:3 },
+  { name:"CBDC Types", terms:["Retail CBDC","Wholesale CBDC","Token-Based CBDC","Account-Based CBDC"], color:0 },
+  { name:"Venture Capital Stages", terms:["Seed financing","Start-up financing","First-stage financing","Second-stage financing"], color:1 },
+  { name:"Central Bank Tools", terms:["Open Market Operations","Forward Guidance","LSAPs (QE)","Funding for Lending"], color:2 },
+  { name:"NZ-Specific Institutions", terms:["RBNZ","OCR","KiwiSaver","Deposit Compensation Scheme (DCS)"], color:3 },
+];
+
+// Add fake terms for connections we need
+const CONNECT_EXTRA = [
+  {term:"Seed financing",def:"Capital at the 'idea' stage — earliest venture capital stage.",week:"W11 Nonbanks"},
+  {term:"Start-up financing",def:"Venture capital for product development and initial marketing.",week:"W11 Nonbanks"},
+  {term:"First-stage financing",def:"Venture capital for initiating manufacturing and sales.",week:"W11 Nonbanks"},
+  {term:"Second-stage financing",def:"Venture capital for initial expansion of a producing/selling company.",week:"W11 Nonbanks"},
+  {term:"Broad Money",def:"M3 + borrowings from private sector by non-bank financial institutions, less currency and bank deposits of non-bank financial institutions.",week:"W9 Central Banks"},
+];
+
+let connectGroups = [], connectSelected = [], connectFound = [], connectLives = 4;
+
+function startConnect() {
+  // Pick 4 random groups
+  const shuffledGroups = shuffle(CONNECT_GROUPS).slice(0,4);
+  connectGroups = shuffledGroups;
+  connectSelected = []; connectFound = []; connectLives = 4;
+  showScreen('connect-screen');
+  renderConnect();
+}
+
+function renderConnect() {
+  document.getElementById('connect-lives').textContent = '❤️'.repeat(connectLives) + '🖤'.repeat(4-connectLives);
+  document.getElementById('connect-lives-text').textContent = connectLives;
+  document.getElementById('connect-found').innerHTML = '';
+
+  connectFound.forEach((g, i) => {
+    const el = document.createElement('div');
+    el.className = `connect-group-found cgf-${g.color}`;
+    el.innerHTML = `<strong>${g.name}:</strong> ${g.terms.join(' • ')}`;
+    document.getElementById('connect-found').appendChild(el);
+  });
+
+  const remainingGroups = connectGroups.filter((_, i) => !connectFound.find(f => f.name === connectGroups[i]?.name));
+
+  // Get all tiles that haven't been found
+  const foundTerms = connectFound.flatMap(g => g.terms);
+  const allTerms = connectGroups.flatMap(g => g.terms);
+  const remaining = shuffle(allTerms.filter(t => !foundTerms.includes(t)));
+
+  const board = document.getElementById('connect-tiles');
+  board.innerHTML = '';
+  remaining.forEach(term => {
+    const el = document.createElement('div');
+    el.className = 'connect-tile';
+    el.textContent = term;
+    el.dataset.term = term;
+    el.onclick = () => toggleConnectTile(el, term);
+    board.appendChild(el);
+  });
+}
+
+function toggleConnectTile(el, term) {
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    connectSelected = connectSelected.filter(t => t !== term);
+  } else {
+    if (connectSelected.length >= 4) { showToast('Select only 4 tiles!','error',1200); return; }
+    el.classList.add('selected');
+    connectSelected.push(term);
+  }
+}
+
+function submitConnect() {
+  if (connectSelected.length !== 4) { showToast('Select exactly 4 tiles!','error'); return; }
+
+  const match = connectGroups.find(g =>
+    connectSelected.every(t => g.terms.includes(t)) && !connectFound.find(f => f.name === g.name)
+  );
+
+  if (match) {
+    connectFound.push(match);
+    connectSelected = [];
+    addXP(25);
+    playTone(660, 0.1);
+    showToast(`✅ "${match.name}" — Correct! +25 XP`, 'success');
+
+    if (connectFound.length === connectGroups.length) {
+      setTimeout(() => {
+        showResults('🟡','Connections Complete!','You found all 4 groups!',
+          [{num:connectFound.length*25,label:'XP Earned'},{num:4-connectLives,label:'Wrong Guesses'},{num:connectFound.length,label:'Groups Found'}],
+          [{text:'New Puzzle',action:'startConnect()'},{text:'Home',action:'goHome()'}]
+        );
+      }, 800);
+    } else {
+      renderConnect();
+    }
+  } else {
+    connectLives--;
+    document.querySelectorAll('.connect-tile.selected').forEach(el => {
+      el.classList.add('wrong');
+      setTimeout(() => el.classList.remove('wrong','selected'), 700);
+    });
+    connectSelected = [];
+    playTone(200, 0.1);
+    document.getElementById('connect-lives').textContent = '❤️'.repeat(connectLives) + '🖤'.repeat(4-connectLives);
+    document.getElementById('connect-lives-text').textContent = connectLives;
+    showToast(`❌ Not a group! ${connectLives} lives left`, 'error');
+
+    if (connectLives <= 0) {
+      setTimeout(() => {
+        showResults('💀','Out of Lives!','Better luck next time!',
+          [{num:connectFound.length,label:'Groups Found'},{num:connectGroups.length,label:'Total Groups'}],
+          [{text:'Try Again',action:'startConnect()'},{text:'Home',action:'goHome()'}]
+        );
+      }, 800);
+    }
+  }
+}
+
+// ===================== RESULTS =====================
+function showResults(emoji, title, subtitle, stats, actions) {
+  document.getElementById('results-emoji').textContent = emoji;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-subtitle').textContent = subtitle;
+
+  const statsEl = document.getElementById('results-stats');
+  statsEl.innerHTML = stats.map(s => `
+    <div class="result-stat">
+      <div class="result-stat-num">${s.num}</div>
+      <div class="result-stat-label">${s.label}</div>
+    </div>
+  `).join('');
+
+  const actEl = document.getElementById('results-actions');
+  actEl.innerHTML = actions.map((a,i) => `
+    <button class="${i===0?'btn-primary':'btn-secondary'}" onclick="${a.action}">${a.text}</button>
+  `).join('');
+
+  showScreen('results-screen');
+}
+
+// ===================== AUDIO =====================
+let audioCtx;
+function playTone(freq, vol) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+// ===================== INIT =====================
+updateHomeStats();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  const fc = document.getElementById('flashcard-screen');
+  if (fc.classList.contains('active')) {
+    if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); flipCard(); }
+    if (e.key === 'ArrowLeft' && fcFlipped) markCard(false);
+    if (e.key === 'ArrowRight' && fcFlipped) markCard(true);
+  }
+  const tf = document.getElementById('tf-screen');
+  if (tf.classList.contains('active') && !tfAnswered) {
+    if (e.key === 'ArrowLeft' || e.key === 't' || e.key === 'T') answerTF(true);
+    if (e.key === 'ArrowRight' || e.key === 'f' || e.key === 'F') answerTF(false);
+  }
+});
+</script>
+</body>
+</html>
