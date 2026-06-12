@@ -367,6 +367,85 @@ body {
   .speed-options { grid-template-columns: 1fr 1fr; }
   .match-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== PRACTICE EXAM ===== */
+#exam-screen .exam-content { flex:1; padding: 20px; max-width: 800px; margin: 0 auto; width:100%; }
+.exam-part-title {
+  font-size: 1.3rem; font-weight: 900; margin: 28px 0 6px;
+  padding: 14px 20px; border-radius: 12px;
+  background: linear-gradient(135deg,rgba(0,212,255,0.1),rgba(124,58,237,0.1));
+  border: 1px solid var(--border);
+}
+.exam-part-sub { color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; padding: 0 4px; }
+.exam-q-block { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+.exam-q-block.answered { border-color: rgba(0,212,255,0.3); }
+.exam-qnum { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing:0.08em; margin-bottom: 8px; }
+.exam-question { font-size: 0.95rem; font-weight: 600; line-height: 1.6; margin-bottom: 14px; }
+.exam-options { display: flex; flex-direction: column; gap: 8px; }
+.exam-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; cursor: pointer;
+  font-size: 0.88rem; line-height: 1.5; transition: all 0.2s;
+}
+.exam-option:hover { border-color: var(--accent); }
+.exam-option input[type=radio] { margin-top: 3px; flex-shrink:0; accent-color: var(--accent); }
+.exam-option.graded-correct { border-color: var(--accent3); background: rgba(16,185,129,0.15); }
+.exam-option.graded-wrong { border-color: var(--danger); background: rgba(239,68,68,0.15); }
+.exam-option.graded-show { border-color: var(--accent3); background: rgba(16,185,129,0.08); }
+.exam-sa-area {
+  width: 100%; min-height: 120px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 10px; padding: 12px 14px;
+  font-size: 0.9rem; line-height: 1.6; resize: vertical;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.exam-sa-area:focus { outline: none; border-color: var(--accent); }
+.exam-model-answer { margin-top: 12px; padding: 14px; border-radius: 10px; background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.25); font-size: 0.88rem; line-height:1.7; display:none; }
+.exam-model-answer strong { color: var(--accent); }
+.exam-self-rate { margin-top: 10px; display: none; }
+.exam-self-rate-label { font-size: 0.8rem; color: var(--text2); margin-bottom: 6px; }
+.self-rate-btns { display: flex; gap: 8px; }
+.self-rate-btn { flex:1; padding: 8px 6px; border-radius: 8px; border: 1px solid; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.sr-full { border-color: var(--accent3); color: var(--accent3); background: rgba(16,185,129,0.1); }
+.sr-full:hover, .sr-full.active { background: var(--accent3); color: #000; }
+.sr-partial { border-color: var(--warning); color: var(--warning); background: rgba(245,158,11,0.1); }
+.sr-partial:hover, .sr-partial.active { background: var(--warning); color: #000; }
+.sr-miss { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+.sr-miss:hover, .sr-miss.active { background: var(--danger); color: white; }
+.exam-submit-bar {
+  position: sticky; bottom: 0; background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px; display: flex; align-items: center; gap: 14px;
+  z-index: 50;
+}
+.exam-progress-txt { color: var(--text2); font-size: 0.85rem; flex:1; }
+.exam-submit-btn {
+  padding: 12px 32px; background: linear-gradient(135deg,var(--warning),#f97316);
+  color: #000; border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s;
+}
+.exam-submit-btn:hover { opacity: 0.9; transform: scale(1.02); }
+.exam-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.exam-timer { font-size: 1rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.exam-timer.warn { color: var(--danger); animation: pulse 1s infinite; }
+.exam-score-breakdown { max-width: 700px; margin: 0 auto; padding: 0 20px 30px; }
+.exam-breakdown-section { margin-bottom: 20px; }
+.exam-breakdown-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--accent); }
+.exam-result-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 8px;
+  font-size: 0.85rem; line-height: 1.5;
+}
+.err-correct { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); }
+.err-wrong { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
+.err-icon { font-size: 1rem; flex-shrink:0; margin-top:1px; }
+.err-text { flex:1; }
+.err-answer { margin-top:4px; color: var(--accent3); font-size:0.82rem; }
+.exam-big-score { text-align:center; padding: 30px 20px 10px; }
+.exam-grade { font-size: 4rem; font-weight:900; }
+.exam-grade-label { font-size:1.1rem; color:var(--text2); margin-bottom:6px; }
+.exam-score-pct { font-size: 2rem; font-weight:800; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -419,6 +498,12 @@ body {
       <div class="mode-name">Connections</div>
       <div class="mode-desc">Group 4 terms that share a common category. NYT Connections-style!</div>
       <span class="mode-badge badge-wild">Wild</span>
+    </div>
+    <div class="mode-card" onclick="startPracticeExam()" style="border-color:rgba(245,158,11,0.4);grid-column:1/-1">
+      <div class="mode-icon">📝</div>
+      <div class="mode-name">Practice Exam &nbsp;<span style="font-size:0.7rem;background:rgba(245,158,11,0.2);color:var(--warning);padding:3px 10px;border-radius:50px;font-weight:700">EXAM FORMAT</span></div>
+      <div class="mode-desc">Full exam simulation: 20 multiple choice + 15 short answer questions. Auto-graded MCQ with full model answers for short answers. Just like the real thing.</div>
+      <span class="mode-badge badge-medium">Exam Sim</span>
     </div>
   </div>
 </div>
