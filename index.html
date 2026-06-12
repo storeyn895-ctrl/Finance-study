@@ -668,6 +668,37 @@ body {
   </div>
 </div>
 
+<!-- ===================== PRACTICE EXAM SCREEN ===================== -->
+<div class="screen" id="exam-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="confirmExamExit()">← Exit</button>
+    <span class="screen-title">📝 Practice Exam</span>
+    <div class="exam-timer" id="exam-timer">75:00</div>
+    <div class="score-display" id="exam-answered-count">0/35 answered</div>
+  </div>
+  <div class="exam-content" id="exam-content">
+    <!-- Dynamically filled -->
+  </div>
+  <div class="exam-submit-bar">
+    <div class="exam-progress-txt" id="exam-progress-txt">Answer all questions before submitting</div>
+    <button class="exam-submit-btn" id="exam-submit-btn" onclick="submitExam()">Submit Exam →</button>
+  </div>
+</div>
+
+<!-- ===================== EXAM RESULTS SCREEN ===================== -->
+<div class="screen" id="exam-results-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <span class="screen-title">📊 Exam Results</span>
+  </div>
+  <div class="exam-big-score" id="exam-big-score"></div>
+  <div class="exam-score-breakdown" id="exam-score-breakdown"></div>
+  <div class="center-action" style="padding-bottom:40px">
+    <button class="btn-primary" onclick="startPracticeExam()">New Exam 🔄</button>
+    <button class="btn-secondary" onclick="goHome()">Home</button>
+  </div>
+</div>
+
 <script>
 // ===================== DATA =====================
 const ALL_TERMS = [
@@ -1617,6 +1648,397 @@ document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight' || e.key === 'f' || e.key === 'F') answerTF(false);
   }
 });
+
+// ===================== PRACTICE EXAM =====================
+const MCQ_BANK = [
+  // FX Markets
+  {q:"Which of the following best describes an INDIRECT exchange rate quote for a New Zealand investor?",opts:["The cost of obtaining one unit of foreign currency in terms of NZD","The quantity of foreign currency that can be obtained in exchange for one unit of NZD","A method where the foreign currency is the base currency","A rate set by government intervention"],ans:1,exp:"An indirect quote has the DOMESTIC currency as the base. So for a NZ investor, NZD/EUR is indirect — it tells you how many Euros per 1 NZD.",topic:"W8 FX"},
+  {q:"The bid price for EUR/NZD is 1.7450 and the ask price is 1.7470. What action does a currency dealer take at the BID price?",opts:["The dealer buys EUR and sells NZD","The dealer sells EUR and buys NZD","The dealer buys NZD and buys EUR","The dealer sells NZD and sells EUR"],ans:0,exp:"BID = Dealer BUYS the BASE currency. EUR is the base in EUR/NZD, so at the bid the dealer buys EUR (and gives NZD in return).",topic:"W8 FX"},
+  {q:"Given EUR/USD = 1.1200 and NZD/USD = 0.6100, what is the implied EUR/NZD exchange rate?",opts:["1.8033","1.8361","0.5446","1.7230"],ans:1,exp:"EUR/NZD = EUR/USD ÷ NZD/USD = 1.1200 ÷ 0.6100 = 1.8361. Both rates share USD, so divide.",topic:"W8 FX"},
+  {q:"The USD/NZD rate moves from 1.5400 to 1.6000. By approximately what percentage did the NZD appreciate against the USD?",opts:["2.5%","3.9%","5.8%","3.4%"],ans:1,exp:"% change = (1.6000 − 1.5400) / 1.5400 × 100 = 0.0600/1.5400 × 100 ≈ 3.9%.",topic:"W8 FX"},
+  {q:"If the NZD depreciates, which of the following effects would you expect?",opts:["Exports become more expensive, hurting exporters","Imports become cheaper for domestic consumers","Exports become cheaper for foreign buyers, boosting export demand","The current account deficit automatically disappears"],ans:2,exp:"A weaker NZD makes NZ goods cheaper for foreigners → more exports. Imports become more expensive. This helps exporters but hurts consumers.",topic:"W8 FX"},
+  {q:"What is the Bretton Woods System?",opts:["A floating exchange rate system introduced in 1971","A system where all major currencies were pegged to gold directly","An international monetary system (1944–1971) where currencies were fixed to the USD, which was convertible to gold at $35/oz","A system for regulating Eurodollar markets"],ans:2,exp:"Bretton Woods (1944–1971) fixed exchange rates to the USD. The USD was convertible to gold at $35/oz. Nixon ended gold convertibility on August 15, 1971.",topic:"W8 FX"},
+  {q:"Eurodollars are best described as:",opts:["Euros held in American banks","USD-denominated deposits held in banks OUTSIDE the United States","A digital currency issued by the ECB","USD deposits held in the US Federal Reserve"],ans:1,exp:"Eurodollars = USD deposits held OUTSIDE the US. The 'Euro' prefix means 'external' — nothing to do with the Euro currency.",topic:"W8 FX"},
+  {q:"SOFR replaced LIBOR as a benchmark rate. What does SOFR stand for?",opts:["Secured Overnight Financing Rate","Standard Overnight Financial Rate","Short-term Overnight Funding Reserve","Standardised Official Financial Rate"],ans:0,exp:"SOFR = Secured Overnight Financing Rate. It replaced USD LIBOR and is based on actual Treasury-secured overnight borrowing transactions, published by the NY Fed.",topic:"W8 FX"},
+  {q:"Which of the following correctly describes Purchasing Power Parity (PPP)?",opts:["Exchange rates are fixed by central banks to equalise trade","Exchange rates should adjust so the price of identical goods is the same across countries when measured in the same currency","Interest rate differentials always drive exchange rate movements","PPP holds perfectly in all real-world currency markets"],ans:1,exp:"PPP theory states exchange rates should move so that a basket of goods costs the same everywhere in the same currency. In practice it often doesn't hold due to trade barriers, transport costs etc.",topic:"W8 FX"},
+  {q:"A currency dealer quotes SGD/NZD Bid: 1.2200 / Ask: 1.2300. You return from Singapore with leftover SGD and want NZD. Which rate applies?",opts:["Ask (1.2300) — you buy SGD from the dealer","Bid (1.2200) — the dealer buys your SGD and gives you NZD","Neither, you use the mid-rate","Both rates apply equally"],ans:1,exp:"You are SELLING SGD (the base currency) to the dealer. The dealer BUYS base at the BID price. So you get 1.22 NZD per SGD.",topic:"W8 FX"},
+  // Options
+  {q:"An investor buys a put option with a strike price of $72 and pays a premium of $3. The spot price at expiry is $69. What is the investor's profit per share?",opts:["$3 profit","$0 (break even)","$72 loss","$0 (option not exercised)"],ans:1,exp:"Put payoff = K − St = 72 − 69 = $3. Profit = $3 − $3 premium = $0. Wait — payoff is $3, cost $3, so net profit = $0. Actually break even. But the option IS exercised because St < K. Revised: profit = 72−69−3 = $0.",topic:"W7 Options"},
+  {q:"Which statement correctly distinguishes the forward market from the futures market?",opts:["Forwards are standardised and traded on exchanges; futures are OTC","Forwards are negotiated privately with no margin; futures are standardised, exchange-traded, with margin deposits","Both markets require daily marking to market","Futures have higher default risk than forwards"],ans:1,exp:"Forwards: OTC, customised, no margin, higher counterparty risk. Futures: exchange-traded, standardised, margin required, lower default risk due to clearinghouse.",topic:"W7 Options"},
+  {q:"What is the maximum loss for an option BUYER?",opts:["Unlimited","The strike price × number of contracts","The option premium paid","The difference between spot and strike price"],ans:2,exp:"The option buyer has the RIGHT not the obligation. If the option expires worthless, the buyer's maximum loss is limited to the premium paid.",topic:"W7 Options"},
+  {q:"A 'Long Straddle' strategy involves:",opts:["Buying a call and selling a put on the same stock","Buying both a call AND a put with the same strike price and expiry date","Selling a call and selling a put simultaneously","Buying a call with a lower strike and selling a call with a higher strike"],ans:1,exp:"Long Straddle = buy call + buy put (same strike, same expiry). Used when you expect significant price movement but don't know the direction. Max loss = both premiums.",topic:"W7 Options"},
+  {q:"An American option differs from a European option in that:",opts:["American options can only be exercised at expiry; European can be exercised anytime","American options can be exercised at ANY time before or at expiry; European options can ONLY be exercised at expiry","American options have lower premiums than European options","American options are traded on US exchanges; European options are traded in Europe"],ans:1,exp:"This is a common exam trap — the names have nothing to do with geography. American = exercise any time. European = exercise only at expiry.",topic:"W7 Options"},
+  {q:"You write an uncovered call option. If the stock price rises significantly above the strike price and the option is exercised, your potential loss is:",opts:["Limited to the premium received","Zero, as you keep the premium","Potentially unlimited, because you must buy shares at market price to deliver","Fixed at the strike price"],ans:2,exp:"An uncovered (naked) call writer must deliver shares they don't own. They must buy at the current (high) market price and sell at the strike. If the price keeps rising, losses are theoretically unlimited.",topic:"W7 Options"},
+  {q:"A call option is 'In the Money' when:",opts:["The spot price equals the strike price","The spot price is below the strike price","The spot price is above the strike price","The option premium is greater than zero"],ans:2,exp:"Call ITM: Spot > Strike. It's profitable to exercise — you can buy at the lower strike price and sell at the higher market price.",topic:"W7 Options"},
+  {q:"Between a futures contract and a swap contract, which carries MORE default risk?",opts:["Futures — because they are traded on organised exchanges","Swaps — because there is no central clearinghouse and they are traded OTC","Both carry equal default risk","Neither carries default risk because both are regulated"],ans:1,exp:"Swaps carry more default risk. They are OTC (no central clearinghouse), less regulated, and there is no daily marking to market. Futures benefit from clearinghouse novation which dramatically reduces default risk.",topic:"W7 Options"},
+  {q:"The Notional Principal in an interest rate swap is:",opts:["The actual amount exchanged between parties at settlement","The principal used only to calculate interest payments — never actually exchanged","The total profit earned by the swap dealer","The margin deposit required to enter the swap"],ans:1,exp:"Notional principal is NEVER exchanged. It's used purely to calculate the interest payments. Only the NET difference in interest payments changes hands.",topic:"W7 Swaps"},
+  {q:"A Credit Default Swap (CDS) is best described as:",opts:["A contract to swap fixed interest payments for floating interest payments","Insurance against credit risk where the protection buyer pays a premium and receives compensation if a credit event occurs","A government-backed guarantee for bank deposits","A forward contract on a basket of currencies"],ans:1,exp:"CDS = credit insurance. Protection buyer pays premium; if a credit event (default, restructuring, bankruptcy) occurs, the protection seller compensates the buyer.",topic:"W7 Swaps"},
+  // Central Banks
+  {q:"Which of the following is NOT an unconventional monetary policy tool?",opts:["Forward guidance","Large-scale asset purchases (LSAPs)","Standard OCR adjustments","Foreign asset purchases"],ans:2,exp:"Standard OCR adjustments are the CONVENTIONAL tool. Unconventional tools are used when the OCR reaches its lower bound: forward guidance, LSAPs (QE), negative OCR, term lending, foreign asset purchases.",topic:"W9 Central Banks"},
+  {q:"Which of the following best describes 'Odyssean Forward Guidance'?",opts:["General statements about the likely future direction of monetary policy (non-binding)","Explicit, binding commitments about the future path of interest rates","Vague speculation about economic trends","Statements with no impact on market expectations"],ans:1,exp:"Odyssean = explicit commitment (binding, like Odysseus tied to the mast). Delphic = vague statements/forecasts (non-binding, like the Oracle at Delphi). Credibility is crucial for Odyssean guidance.",topic:"W9 Central Banks"},
+  {q:"What is the primary impact of LSAPs (Large-Scale Asset Purchases) by a central bank?",opts:["They lower short-term interest rates through OCR adjustments","They lower longer-term interest rates and flatten the yield curve through portfolio balancing","They directly increase money supply without affecting interest rates","They increase inflation by directly raising interest rates"],ans:1,exp:"LSAPs affect LONGER-term rates (2+ years) through portfolio balancing — investors shift into riskier assets, lowering yields. OCR affects SHORT-term rates. LSAPs also signal the future policy path.",topic:"W9 Central Banks"},
+  {q:"A term deposit with a NEGATIVE interest rate means:",opts:["The consumer receives more money at maturity than deposited","The consumer receives LESS money back at maturity than originally deposited","The bank pays the consumer interest on the deposit","The government compensates depositors for the negative rate"],ans:1,exp:"Negative rates flip the normal relationship: depositors pay the bank to hold their money. You deposit $100, you get back $99.50 (for example). Banks may also charge depositors directly.",topic:"W9 Central Banks"},
+  {q:"The Exchange Settlement Accounts (ESA) are best described as:",opts:["Savings accounts held by individuals at commercial banks","Accounts held by commercial banks at the central bank, used to settle interbank transactions","Government accounts used to fund fiscal spending","Foreign currency reserves held by the Reserve Bank"],ans:1,exp:"ESAs are the accounts commercial banks hold at the Reserve Bank. The balance in ESAs is 'money' for banks — equivalent to what cash is for consumers. Used for interbank settlement.",topic:"W9 Central Banks"},
+  {q:"What is the difference between Sterilised and Unsterilised FX intervention?",opts:["Sterilised affects only the money supply; Unsterilised affects only the exchange rate","Sterilised offsets monetary effects via open market operations (exchange rate affected, money supply neutralised); Unsterilised affects BOTH exchange rate and money supply","Both affect the exchange rate and money supply equally","Sterilised is used only by the US Federal Reserve"],ans:1,exp:"Sterilised: FX action + opposite OMO = exchange rate moves but money supply unchanged. Unsterilised: only FX action = both exchange rate and money supply affected.",topic:"W9 Central Banks"},
+  {q:"M1 (Narrow Money) consists of:",opts:["All bank deposits including time deposits and savings accounts","Coins + notes + current bank accounts (medium of exchange)","M3 plus borrowings from non-bank financial institutions","Only physical currency notes and coins"],ans:1,exp:"M1 = coins + notes + current (transaction/demand) accounts. It represents money immediately available for transactions — the medium of exchange.",topic:"W9 Central Banks"},
+  // Commercial Banks
+  {q:"Interest rate risk arises for banks primarily because:",opts:["Banks always lend at fixed rates","Deposits (liabilities) are typically shorter-term than loans (assets), so when rates rise, deposits reprice BEFORE loans","Banks do not hold any fixed-rate assets","Regulators force banks to mismatch their maturities"],ans:1,exp:"Banks 'borrow short and lend long.' When rates rise, the cost of deposits increases immediately (they reprice quickly), but income from long-term fixed-rate loans doesn't rise. This squeezes net interest margin.",topic:"W10 Banks"},
+  {q:"A bank has RSA of $800m and RSL of $600m. What is the maturity gap, and what happens to earnings if interest rates RISE?",opts:["Gap = −$200m; earnings fall","Gap = +$200m; earnings rise","Gap = +$200m; earnings fall","Gap = −$200m; earnings rise"],ans:1,exp:"Gap = RSA − RSL = 800 − 600 = +$200m (positive gap). Positive gap → earnings RISE when rates rise, because more assets reprice upward than liabilities.",topic:"W10 Banks"},
+  {q:"Which of the following is a critique of Value at Risk (VaR)?",opts:["VaR accurately predicts the exact maximum potential loss","VaR assumes the future will always resemble the past","VaR provides detailed information about extreme tail losses","VaR does not rely on statistical assumptions"],ans:1,exp:"VaR critiques: (1) assumes future = past, (2) does NOT tell you the maximum loss — only the threshold, (3) gives no info about extreme losses beyond the threshold, (4) assumes normal distribution.",topic:"W10 Banks"},
+  {q:"What does the CAMELS rating system assess?",opts:["Currency, Assets, Mortgages, Equity, Leverage, Securities","Capital adequacy, Asset quality, Management, Earnings, Liquidity, Sensitivity to market risk","Credit risk, Asset-liability matching, Market risk, Earnings, Lending, Solvency","Capital adequacy, Accounting, Management, Exchange rate, Liquidity, Swaps"],ans:1,exp:"CAMELS: Capital adequacy, Asset quality, Management, Earnings, Liquidity, Sensitivity to market risk. Each component rated 1 (best) to 5 (worst), plus a composite rating.",topic:"W10 Banks"},
+  {q:"Under Basel III, the minimum ratio of Common Equity Tier 1 (CET1) to Risk-Weighted Assets (RWA) is:",opts:["8.0%","6.0%","4.5%","2.5%"],ans:2,exp:"Basel III minimums: CET1/RWA ≥ 4.5%, Tier 1/RWA ≥ 6%, Total Capital/RWA ≥ 8%. CET1 is the highest quality capital (ordinary shares + retained earnings).",topic:"W10 Banks"},
+  {q:"Which of the following is classified as a PRIMARY reserve in bank asset management?",opts:["Treasury bills and short-term government securities","Corporate bonds and long-term investments","Vault cash and deposits held at the central bank","Bank loans to customers"],ans:2,exp:"Primary reserves = vault cash + deposits at the central bank. They are immediately available for liquidity. Secondary reserves = short-term government securities (some return + liquidity).",topic:"W10 Banks"},
+  {q:"Basel II is criticized for failing to prevent the 2008 financial crisis because:",opts:["It set capital requirements that were too high","It required sophisticated models that proved too complex and volatile","It did not require any capital against credit risk","It banned the use of derivatives for hedging"],ans:1,exp:"Basel II (2004) required complex internal models that turned out to be procyclical — they amplified the crisis rather than preventing it. Basel III was developed in direct response.",topic:"W10 Banks"},
+  // Nonbanks
+  {q:"Which of the following best distinguishes an Investment Bank from a Commercial Bank?",opts:["Investment banks accept deposits and make loans; commercial banks underwrite securities","Investment banks do NOT accept deposits or make traditional loans; they help companies issue securities and provide M&A advice","Investment banks are regulated by APRA; commercial banks are unregulated","Commercial banks cannot participate in capital markets"],ans:1,exp:"Key distinction: Commercial banks = deposit-taking + lending. Investment banks = securities issuance, underwriting, M&A, trading. Investment banks generally do NOT accept deposits.",topic:"W11 Nonbanks"},
+  {q:"Adverse Selection in insurance occurs when:",opts:["Having insurance causes people to take more risks than they otherwise would","People with higher-than-average risk are more likely to seek insurance while concealing their risk","Insurance companies refuse to pay valid claims","Reinsurance companies take on too much risk"],ans:1,exp:"Adverse selection = risky people seeking insurance while hiding their risk (BEFORE the contract). Moral hazard = behaving recklessly AFTER getting insured. Key: adverse selection is pre-contract.",topic:"W11 Nonbanks"},
+  {q:"The NZ Deposit Compensation Scheme (DCS) covers depositors for up to:",opts:["NZ$50,000 per institution","NZ$100,000 per customer per deposit taker","NZ$250,000 across all institutions","Unlimited coverage for all bank deposits"],ans:1,exp:"DCS covers up to NZ$100,000 per customer per deposit taker (bank, building society, credit union, licensed finance company) if the institution fails. Funded by deposit takers.",topic:"W11 Nonbanks"},
+  {q:"An Exchange-Traded Fund (ETF) differs from a traditional mutual fund in that:",opts:["ETFs only invest in bonds; mutual funds only invest in shares","ETF prices fluctuate throughout the trading day like a stock; mutual fund units are priced once daily","ETFs require higher minimum investments than mutual funds","Mutual funds have lower fees than ETFs"],ans:1,exp:"ETFs trade on exchanges throughout the day at market prices. Mutual funds (open-end) are priced once daily at NAV. ETFs also typically have lower expense ratios.",topic:"W11 Nonbanks"},
+  {q:"A Closed-End Fund differs from an Open-End (Mutual) Fund in that:",opts:["A closed-end fund continuously issues new shares to investors","A closed-end fund sells a fixed number of shares at IPO and those shares then trade on a secondary market","An open-end fund is traded on a stock exchange like any other share","Closed-end funds are exclusively invested in fixed-income securities"],ans:1,exp:"Closed-end = fixed shares outstanding, trade on secondary markets (price can differ from NAV). Open-end = continuously issues/redeems units at NAV.",topic:"W11 Nonbanks"},
+  {q:"KiwiSaver in New Zealand is:",opts:["A mandatory pension scheme accessible at age 60","A voluntary savings scheme operational since July 2, 2007, normally accessible at age 65, but since 2015 can be used for a first home deposit","A government-run investment fund exclusively for government employees","A superannuation scheme with defined benefits determined by years of service"],ans:1,exp:"KiwiSaver: started July 2, 2007. Generally accessible at 65. Since 2015, first-home buyers can withdraw for a first home deposit. It's a voluntary accumulation-style scheme.",topic:"W11 Nonbanks"},
+  // Crypto/CBDC
+  {q:"Blockchain is best described as:",opts:["A centralised database managed by a single financial institution","A distributed digital ledger that records transactions across a network of computers; once added, blocks cannot be altered","A government-issued digital currency system","An encryption algorithm used exclusively for Bitcoin mining"],ans:1,exp:"Blockchain = distributed ledger across many nodes. Immutable (append-only). Decentralised — no single authority. Each block contains multiple transactions and links cryptographically to the previous block.",topic:"W12 Crypto"},
+  {q:"'Proof of Work' in Bitcoin refers to:",opts:["The legal proof that you own Bitcoin","The computational process miners complete to validate transactions and add blocks to the blockchain — difficult to do, easy to verify","A government certification required to use cryptocurrency","The process of converting fiat money to Bitcoin"],ans:1,exp:"Proof of Work: miners compete to solve a computationally hard puzzle. The winner adds the next block and earns Bitcoin reward. 'Difficult to do, easy to verify' is the key property.",topic:"W12 Crypto"},
+  {q:"A Retail CBDC (rCBDC) is designed for use by:",opts:["Commercial banks and financial institutions only","The general public — households and firms","Central banks for international settlements","Investment banks for securities trading"],ans:1,exp:"Retail CBDC = for the general public (like digital cash). Wholesale CBDC = for financial institutions only (like digital reserves).",topic:"W12 Crypto"},
+  {q:"Which of the following is a key challenge/limitation of Bitcoin as a payment system?",opts:["Bitcoin has too many transactions per second for global use","Bitcoin's transaction speed is very slow (7–10 transactions/second) compared to traditional payment systems like Visa (thousands/second)","Bitcoin is backed by gold, limiting its supply","Bitcoin transactions are completely anonymous with no record on the blockchain"],ans:1,exp:"Bitcoin processes only 7–10 transactions/second vs Visa's thousands/second. This scalability problem, combined with high fees and volatility, limits Bitcoin's use as everyday money.",topic:"W12 Crypto"},
+  {q:"An Account-Based CBDC requires:",opts:["No identification — ownership is verified by holding the token","Verified identity and KYC (Know Your Customer) — more traceable and easier to regulate","Physical currency to back each digital unit","Private keys that must never be shared"],ans:1,exp:"Account-Based CBDC: ownership tied to verified identity/account (like a bank account). Token-Based CBDC: ownership = holding the token (like cash) — more anonymous, higher money laundering risk.",topic:"W12 Crypto"},
+  {q:"Which of the following correctly describes Fiat Money?",opts:["Money backed by a physical commodity like gold or silver","Money with no intrinsic value that is legal tender by law and can be used to pay taxes","A form of cryptocurrency issued by a central bank","Money whose value is determined by the market, not by government decree"],ans:1,exp:"Fiat money has no intrinsic value — notes/coins are just paper and metal. Its value comes from government decree (legal tender) and the trust people place in it. You can use it to pay taxes.",topic:"W12 Crypto"},
+];
+
+const SA_BANK = [
+  {
+    q:"Between a futures contract and a swap contract, which one carries more default risk and why? (3 marks)",
+    marks:3,
+    model:`**Swaps carry more default risk.** Reasons:\n\n1. **No central clearinghouse:** Unlike futures, swaps are OTC (over-the-counter) contracts traded directly between two parties. There is no clearinghouse standing between them to guarantee performance.\n\n2. **No novation:** Futures use novation — the clearinghouse replaces the original contract, becoming the buyer to every seller and seller to every buyer. Swaps do not have this protection.\n\n3. **Less regulated:** Swap markets are less regulated than futures exchanges. No margin requirements or daily marking to market, so losses can accumulate without being recognised.\n\n4. **Longer duration:** Swaps are often long-term (5–10+ years), giving more time for a counterparty to default.`
+  },
+  {
+    q:"An investor buys a put option on DeltaTech Inc. with a strike price of $140 and pays a premium of $14 per share. Explain whether the investor will exercise the option and calculate the profit/loss if the spot price at expiry is: (a) $120, (b) $140, (c) $155. (6 marks)",
+    marks:6,
+    model:`**Formula:** Put profit = MAX(K − St, 0) − premium\n\n**(a) Spot = $120:**\nPayoff = $140 − $120 = $20. Profit = $20 − $14 = **+$6 profit per share**. ✅ Option IS exercised (St < K, so in the money).\n\n**(b) Spot = $140:**\nPayoff = $140 − $140 = $0. Profit = $0 − $14 = **−$14 loss per share**. The option is AT THE MONEY. Technically exercisable but no benefit — investor loses the full premium.\n\n**(c) Spot = $155:**\nPayoff = MAX($140 − $155, 0) = $0. Profit = $0 − $14 = **−$14 loss per share**. ❌ Option is NOT exercised — it is out of the money (St > K for a put). Investor loses only the premium.`
+  },
+  {
+    q:"You write 500 uncovered call options with the following terms: 'NovaTech Dec 2024 $50 call @ $5'. On December 1st, NovaTech shares trade at $65. The options are exercised. Calculate your total profit or loss and show your reasoning. (4 marks)",
+    marks:4,
+    model:`**As the uncovered call WRITER:**\n\n- You received the premium: 500 × $5 = **$2,500 income**\n- When exercised: you must BUY shares at market price ($65) and SELL at strike price ($50)\n- Loss per share = $65 − $50 = $15\n- Total loss from delivery: 500 × $15 = **$7,500**\n\n**Net result:** $2,500 − $7,500 = **−$5,000 total loss**\n\n**Reasoning:** As an uncovered writer, you don't own the shares. You must buy them at the high market price ($65) and deliver them at the low strike price ($50). This is why uncovered call writing has potentially unlimited risk — if the price rises further, losses grow without bound.`
+  },
+  {
+    q:"On August 1st, DeltaTech shares trade at $150. You strongly believe the price will fall to $120 by March 2025. The following options are available: 'DeltaTech Mar 2025 $130 put @ $6' and 'DeltaTech Mar 2025 $140 put @ $14'. You have $300 to invest. Which option would you buy, what profit would you expect, and why? (5 marks)",
+    marks:5,
+    model:`**Best choice: DeltaTech Mar 2025 $140 put @ $14**\n\n**Reasoning:** If the price falls to $120, both puts will be in the money. The $140 put gives a higher payoff:\n- $140 put payoff at $120: $140 − $120 = $20. Profit = $20 − $14 = **$6 profit per share**\n- $130 put payoff at $120: $130 − $120 = $10. Profit = $10 − $6 = **$4 profit per share**\n\n**Number of contracts:** With $300:\n- $140 put: 300 ÷ 14 ≈ 21 shares (round down)\n- $130 put: 300 ÷ 6 = 50 shares\n\n**Total profit comparison:**\n- $140 put: 21 × $6 = **$126 total profit**\n- $130 put: 50 × $4 = **$200 total profit**\n\n**Revised answer:** The $130 put actually generates MORE total profit ($200 vs $126) due to more contracts purchasable. The optimal choice depends on your analysis — per-share profit favours the $140 put, but total return with limited capital favours the $130 put. A well-reasoned answer for either choice is acceptable.`
+  },
+  {
+    q:"Explain the difference between Adverse Selection and Moral Hazard in the insurance industry. Give one real-world example of each. (4 marks)",
+    marks:4,
+    model:`**Adverse Selection** occurs BEFORE the insurance contract is signed. It is a market failure where people with higher-than-average risk are more likely to seek insurance, while concealing their elevated risk from the insurer. The insurer ends up with a riskier pool than expected.\n\n*Example:* Pipe smokers concealing their smoking habit on a health insurance application. The insurer prices the policy assuming average health risk but actually covers a higher-risk individual.\n\n**Moral Hazard** occurs AFTER the insurance contract is signed. It is the tendency for insured parties to take greater risks than they would otherwise, because they don't bear the full financial consequences of their actions.\n\n*Example:* A person who over-insures their car then drives more recklessly because they know they are covered. Or (from your notes) over-insuring an asset and then committing arson.\n\n**Key distinction:** Adverse selection = hidden information problem (pre-contract). Moral hazard = hidden action problem (post-contract).`
+  },
+  {
+    q:"A bank has the following balance sheet details:\n- Rate-Sensitive Assets (RSA): $900 million\n- Rate-Sensitive Liabilities (RSL): $600 million\n\nCalculate the Maturity Gap and explain what happens to the bank's net interest income if interest rates rise by 1%. (3 marks)",
+    marks:3,
+    model:`**Maturity Gap = RSA − RSL = $900m − $600m = +$300 million (positive gap)**\n\n**Effect of a 1% rate rise:**\n- Additional interest income from RSA: $900m × 1% = **+$9 million**\n- Additional interest cost on RSL: $600m × 1% = **−$6 million**\n- Net change in interest income: $9m − $6m = **+$3 million improvement**\n\n**Conclusion:** A positive gap means the bank BENEFITS from rising interest rates. When rates rise, more assets reprice upward than liabilities, increasing the bank's net interest margin. A negative gap would mean the reverse — rising rates hurt the bank.`
+  },
+  {
+    q:"Explain the difference between Sterilised and Unsterilised FX intervention by a central bank. Which would a central bank use if it wanted to weaken its currency without changing the domestic money supply? (3 marks)",
+    marks:3,
+    model:`**Unsterilised FX Intervention:** The central bank buys/sells foreign currency WITHOUT offsetting the monetary impact. This affects BOTH the exchange rate AND the domestic money supply.\n- Example: RBA buys USD with AUD → AUD supply increases → AUD weakens → money supply expands\n\n**Sterilised FX Intervention:** The central bank buys/sells foreign currency AND simultaneously conducts an opposite open market operation to neutralise the monetary impact. This affects the exchange rate but leaves the money supply UNCHANGED.\n- Example: RBA buys USD (sells AUD) → also sells government bonds (removes AUD from circulation) → AUD weakens but money supply stays the same\n\n**Answer:** To weaken the currency WITHOUT changing the money supply, the central bank would use **Sterilised FX Intervention** — it intervenes in the FX market but offsets the domestic monetary effect through bond sales.`
+  },
+  {
+    q:"What are the three ways to measure interest rate risk for a commercial bank? Briefly explain each. (3 marks)",
+    marks:3,
+    model:`**1. Maturity Gap Analysis:**\nGap = RSA − RSL (Rate-Sensitive Assets minus Rate-Sensitive Liabilities). Measures the mismatch between assets and liabilities that reprice within a given period. Simple but imprecise — ignores the timing of cash flows within the period.\n\n**2. Duration Gap Analysis:**\nDuration Gap = Duration(Assets) − [MVL/MVA × Duration(Liabilities)]. More precise than maturity gap — measures the weighted average time to receive cash flows. Shows the price sensitivity of the bank's net worth to interest rate changes.\n\n**3. Value at Risk (VaR):**\nA statistical model estimating the maximum potential loss within a given time period at a given confidence level (e.g., "There is a 95% chance the portfolio will not lose more than $X in one day"). Uses historical data and probability distributions.`
+  },
+  {
+    q:"A European investor purchases a €5,000,000 floating-rate CD with a 2-year life. The rate is set at EURIBOR 6-month minus 0.50%, reset every 6 months. The initial EURIBOR rate is 5.00% p.a. How much does the investor receive after the first 6 months? (3 marks)",
+    marks:3,
+    model:`**Step 1:** Calculate the applicable rate for the first 6 months:\nRate = EURIBOR − spread = 5.00% − 0.50% = **4.50% p.a.**\n\n**Step 2:** Convert to 6-month rate:\n6-month rate = 4.50% ÷ 2 = **2.25%** (simple interest for 6 months)\n\n**Step 3:** Calculate interest received:\nInterest = €5,000,000 × 2.25% = **€112,500**\n\n**The investor receives €112,500 after the first 6 months.**\n\n*Note: After 6 months, the rate resets to the new EURIBOR rate minus 0.50% for the next 6-month period.*`
+  },
+  {
+    q:"Explain how Large-Scale Asset Purchases (LSAPs) differ from standard OCR adjustments as monetary policy tools. Why did central banks use LSAPs during COVID-19? (4 marks)",
+    marks:4,
+    model:`**Standard OCR Adjustments:**\n- The central bank changes the overnight cash rate target\n- Affects SHORT-TERM interest rates (overnight to 1-2 years)\n- Works through the money market and bank lending rates\n- Traditional monetary policy tool\n\n**LSAPs (Quantitative Easing):**\n- The central bank PURCHASES government bonds (and sometimes other assets) in large quantities\n- Affects LONGER-TERM interest rates (2+ years) by pushing up bond prices and pushing down yields\n- Works through portfolio balancing (investors shift to riskier assets) and signalling\n- An UNCONVENTIONAL tool used when OCR is near its lower bound\n\n**Why LSAPs were used during COVID-19:**\nWhen the pandemic hit, central banks cut the OCR to near zero (or negative). With no more room to cut rates conventionally, they turned to LSAPs to further reduce longer-term borrowing costs for businesses and households. The RBNZ purchased ~$53 billion of bonds. The RBA used a "Term Funding Facility" instead of direct LSAPs.`
+  },
+  {
+    q:"A portfolio has a market value of NZ$2,000,000. The five worst daily value changes recorded are: −9%, −6%, −4%, −2%, −1%. What is the 95% VaR of this portfolio in dollar terms? Briefly explain what this number means. (3 marks)",
+    marks:3,
+    model:`**Identifying the VaR:**\nWith 5 worst outcomes, the 95% VaR is the **4th worst** loss (i.e., the threshold where 95% of days are better).\n\nThe 5 worst daily losses in order: −9%, −6%, −4%, −2%, −1%\nThe 4th worst = **−2%**\n\n**Dollar VaR = 2% × $2,000,000 = $40,000**\n\n**Interpretation:**\n"There is a 95% probability that the portfolio will NOT lose more than $40,000 in a single day." Or equivalently: on 1 out of every 20 trading days, we would expect to lose MORE than $40,000.\n\n*Important caveat:* VaR does NOT tell you the maximum possible loss — it only gives the threshold. On that 1-in-20 day, the loss could be far larger (e.g., $180,000 on a −9% day).`
+  },
+  {
+    q:"Describe the three steps involved in bringing a new security to market through an investment bank. (3 marks)",
+    marks:3,
+    model:`**1. Origination:**\nThe investment banker advises the issuer on feasibility, determines the amount of capital to raise, decides on the type of financing (debt vs. equity), designs the security's characteristics (maturity, interest rate, covenants), and handles regulatory registration (prospectus).\n\n**2. Underwriting:**\nThe investment bank buys the new securities from the issuer at an agreed price, assuming the price risk. If the issue is too large, an underwriting syndicate (group of investment banks) is formed to share the risk. The bank now holds the securities and must sell them.\n\n**3. Distribution:**\nThe syndicate sells the securities to institutional and retail investors as quickly as possible at the offering price. The goal is to place the entire issue. An alternative is "Best-Efforts" where the bank tries to sell but doesn't guarantee to buy the securities itself.`
+  },
+  {
+    q:"What is the difference between a Retail CBDC and a Wholesale CBDC? What are two key risks associated with introducing a retail CBDC? (4 marks)",
+    marks:4,
+    model:`**Retail CBDC (rCBDC):** Digital central bank money available to the general public — households and firms. Functions like digital cash. Could be token-based (anonymous, like physical cash) or account-based (requires KYC/identity verification).\n\n**Wholesale CBDC (wCBDC):** Digital central bank money available only to financial institutions (commercial banks, etc.) for interbank settlement. Uses distributed ledger technology (DLT). Less controversial than retail CBDC.\n\n**Two key risks of retail CBDC:**\n\n1. **Bank Disintermediation:** If households can hold CBDC directly with the central bank, they may move deposits from commercial banks to CBDC. This reduces commercial banks' deposit base, limiting their ability to lend and potentially raising borrowing costs economy-wide.\n\n2. **Bank Runs:** In a financial crisis, it becomes very easy for people to quickly convert commercial bank deposits to "safe" central bank CBDC — potentially accelerating a bank run and amplifying financial instability.`
+  },
+  {
+    q:"Explain the concept of the Money Multiplier and how Open Market Operations by a central bank affect the money supply. (3 marks)",
+    marks:3,
+    model:`**Money Multiplier:**\nAn initial injection of base money (M0) by the central bank creates a LARGER increase in broad money through successive rounds of lending and depositing. If banks keep a fraction in reserve and lend the rest, each loan becomes someone else's deposit, which then gets re-lent.\n\nExample: Central bank injects $100. Bank keeps $10 (10% reserve), lends $90. That $90 becomes a deposit somewhere, $81 gets lent, and so on. Total broad money created = $100 × (1/reserve ratio) = $1,000.\n\n**Open Market Operations (OMO):**\n- **To increase money supply:** Central bank BUYS government securities from banks → banks receive cash (ESA balances increase) → banks have more funds to lend → multiplier effect expands broad money → downward pressure on interest rates\n- **To decrease money supply:** Central bank SELLS government securities → banks pay cash (ESA balances decrease) → less to lend → money supply contracts → upward pressure on rates\n\nThe RBA/RBNZ use repos (repurchase agreements) most commonly for day-to-day OMO.`
+  },
+  {
+    q:"NovaTech stock currently trades at $50. The following options are quoted: 'NovaTech Dec $50 call @ $5' and 'NovaTech Dec $55 call @ $2'. You believe the stock will rise to $60 and have $400 to invest. Which call option would you buy, what is your expected profit, and why? (5 marks)",
+    marks:5,
+    model:`**If stock rises to $60 at expiry:**\n\n**Option A: $50 call @ $5**\n- Payoff = $60 − $50 = $10 per share\n- Profit per share = $10 − $5 = $5\n- Contracts with $400: 400 ÷ 5 = 80 shares\n- Total profit: 80 × $5 = **$400**\n\n**Option B: $55 call @ $2**\n- Payoff = $60 − $55 = $5 per share\n- Profit per share = $5 − $2 = $3\n- Contracts with $400: 400 ÷ 2 = 200 shares\n- Total profit: 200 × $3 = **$600**\n\n**Best choice: The $55 call @ $2**\n\n**Reasoning:** Although the $50 call has a higher per-share profit ($5 vs $3), the $55 call's lower premium allows you to purchase more contracts with your $400 budget. The total expected profit of $600 exceeds $400 from the $50 call. The $55 call provides more leverage for the same capital outlay.`
+  },
+];
+
+// Exam state
+let examMCQ = [], examSA = [], examTimer = null, examTimeLeft = 75*60, examSubmitted = false;
+let saRatings = {};
+
+function startPracticeExam() {
+  // Build exam
+  examMCQ = shuffle(MCQ_BANK).slice(0,20);
+  examSA = shuffle(SA_BANK).slice(0,15);
+  examSubmitted = false;
+  saRatings = {};
+  examTimeLeft = 75*60;
+
+  showScreen('exam-screen');
+  renderExam();
+  startExamTimer();
+}
+
+function renderExam() {
+  const content = document.getElementById('exam-content');
+  content.innerHTML = '';
+
+  // Part A header
+  const partA = document.createElement('div');
+  partA.innerHTML = `
+    <div class="exam-part-title">📋 Part A: Multiple Choice <span style="float:right;font-size:0.85rem;font-weight:400;color:var(--text2)">(20 questions × 1 mark = 20 marks)</span></div>
+    <div class="exam-part-sub">Select ONE answer for each question. Each question is worth 1 mark.</div>
+  `;
+  content.appendChild(partA);
+
+  examMCQ.forEach((q, i) => {
+    const block = document.createElement('div');
+    block.className = 'exam-q-block';
+    block.id = `mcq-block-${i}`;
+    block.innerHTML = `
+      <div class="exam-qnum">Question ${i+1} &nbsp;·&nbsp; ${q.topic}</div>
+      <div class="exam-question">${q.q}</div>
+      <div class="exam-options" id="mcq-opts-${i}">
+        ${q.opts.map((opt,j) => `
+          <label class="exam-option" id="mcq-opt-${i}-${j}">
+            <input type="radio" name="mcq-${i}" value="${j}" onchange="mcqChanged(${i})">
+            <span><strong>${['A','B','C','D'][j]}.</strong> ${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+    content.appendChild(block);
+  });
+
+  // Part B header
+  const partB = document.createElement('div');
+  partB.innerHTML = `
+    <div class="exam-part-title" style="margin-top:36px">✍️ Part B: Short Answer <span style="float:right;font-size:0.85rem;font-weight:400;color:var(--text2)">(15 questions — see marks per question)</span></div>
+    <div class="exam-part-sub">Write your answers in the text boxes. After submission, compare your answers to the model answers and rate yourself.</div>
+  `;
+  content.appendChild(partB);
+
+  examSA.forEach((q, i) => {
+    const block = document.createElement('div');
+    block.className = 'exam-q-block';
+    block.id = `sa-block-${i}`;
+    block.innerHTML = `
+      <div class="exam-qnum">Question ${20+i+1} &nbsp;·&nbsp; (${q.marks} marks)</div>
+      <div class="exam-question" style="white-space:pre-line">${q.q}</div>
+      <textarea class="exam-sa-area" id="sa-ans-${i}" placeholder="Write your answer here..." oninput="saChanged(${i})"></textarea>
+    `;
+    content.appendChild(block);
+  });
+
+  updateExamProgress();
+}
+
+function mcqChanged(i) {
+  document.getElementById(`mcq-block-${i}`).classList.add('answered');
+  updateExamProgress();
+}
+
+function saChanged(i) {
+  const val = document.getElementById(`sa-ans-${i}`).value.trim();
+  const block = document.getElementById(`sa-block-${i}`);
+  if (val.length > 10) block.classList.add('answered');
+  else block.classList.remove('answered');
+  updateExamProgress();
+}
+
+function updateExamProgress() {
+  const mcqDone = examMCQ.filter((_,i) => document.querySelector(`input[name="mcq-${i}"]:checked`)).length;
+  const saDone = examSA.filter((_,i) => { const el=document.getElementById(`sa-ans-${i}`); return el && el.value.trim().length > 10; }).length;
+  const total = mcqDone + saDone;
+  document.getElementById('exam-answered-count').textContent = `${total}/35 answered`;
+  document.getElementById('exam-progress-txt').textContent = `MCQ: ${mcqDone}/20 · Short Answer: ${saDone}/15`;
+}
+
+function startExamTimer() {
+  clearInterval(examTimer);
+  examTimer = setInterval(() => {
+    examTimeLeft--;
+    const m = Math.floor(examTimeLeft/60);
+    const s = examTimeLeft%60;
+    const el = document.getElementById('exam-timer');
+    el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+    el.classList.toggle('warn', examTimeLeft < 300);
+    if (examTimeLeft <= 0) {
+      clearInterval(examTimer);
+      showToast('⏱ Time is up! Submitting exam...', 'error', 3000);
+      setTimeout(submitExam, 2000);
+    }
+  }, 1000);
+}
+
+function confirmExamExit() {
+  if (!examSubmitted && confirm('Exit exam? Your answers will be lost.')) {
+    clearInterval(examTimer);
+    goHome();
+  } else if (examSubmitted) {
+    clearInterval(examTimer);
+    goHome();
+  }
+}
+
+function submitExam() {
+  if (examSubmitted) return;
+  examSubmitted = true;
+  clearInterval(examTimer);
+
+  // Grade MCQ
+  let mcqScore = 0;
+  const mcqResults = examMCQ.map((q, i) => {
+    const sel = document.querySelector(`input[name="mcq-${i}"]:checked`);
+    const chosen = sel ? parseInt(sel.value) : -1;
+    const correct = chosen === q.ans;
+    if (correct) mcqScore++;
+    return { q, chosen, correct };
+  });
+
+  // Collect SA answers
+  const saAnswers = examSA.map((q, i) => ({
+    q,
+    answer: document.getElementById(`sa-ans-${i}`)?.value.trim() || ''
+  }));
+
+  showExamResults(mcqResults, saAnswers, mcqScore);
+}
+
+function showExamResults(mcqResults, saAnswers, mcqScore) {
+  showScreen('exam-results-screen');
+
+  const totalMCQMarks = mcqScore;
+  const totalSAMarks = examSA.reduce((s,q)=>s+q.marks,0);
+
+  // Big score header
+  const pct = Math.round(mcqScore/20*100);
+  let grade = pct>=90?'A+':pct>=80?'A':pct>=70?'B+':pct>=60?'B':pct>=50?'C':'D';
+  let gradeColor = pct>=80?'var(--accent3)':pct>=60?'var(--warning)':'var(--danger)';
+  document.getElementById('exam-big-score').innerHTML = `
+    <div class="exam-grade" style="color:${gradeColor}">${grade}</div>
+    <div class="exam-grade-label">MCQ Score (auto-graded)</div>
+    <div class="exam-score-pct">${mcqScore} / 20 (${pct}%)</div>
+    <div style="color:var(--text2);margin-top:8px;font-size:0.9rem">Self-rate your short answers below to see your full score</div>
+  `;
+
+  // Build breakdown
+  const breakdown = document.getElementById('exam-score-breakdown');
+  breakdown.innerHTML = '';
+
+  // MCQ Breakdown
+  const mcqSection = document.createElement('div');
+  mcqSection.className = 'exam-breakdown-section';
+  mcqSection.innerHTML = `<div class="exam-breakdown-title">📋 Part A — Multiple Choice Results</div>`;
+  mcqResults.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = `exam-result-row ${r.correct?'err-correct':'err-wrong'}`;
+    row.innerHTML = `
+      <div class="err-icon">${r.correct?'✅':'❌'}</div>
+      <div class="err-text">
+        <strong>Q${i+1}:</strong> ${r.q.q.length>100?r.q.q.slice(0,100)+'...':r.q.q}
+        ${!r.correct ? `<div class="err-answer">Your answer: ${r.chosen>=0?['A','B','C','D'][r.chosen]+'. '+r.q.opts[r.chosen]:'(No answer)'}
+Correct answer: ${['A','B','C','D'][r.q.ans]}. ${r.q.opts[r.q.ans]}
+💡 ${r.q.exp}</div>` : `<div class="err-answer">✓ ${['A','B','C','D'][r.q.ans]}. ${r.q.opts[r.q.ans]}</div>`}
+      </div>
+    `;
+    mcqSection.appendChild(row);
+  });
+  breakdown.appendChild(mcqSection);
+
+  // SA Breakdown
+  const saSection = document.createElement('div');
+  saSection.className = 'exam-breakdown-section';
+  saSection.innerHTML = `<div class="exam-breakdown-title">✍️ Part B — Short Answer Review</div>
+    <div style="color:var(--text2);font-size:0.85rem;margin-bottom:14px">Read each model answer. Compare it to what you wrote. Rate yourself honestly.</div>`;
+
+  saAnswers.forEach((item, i) => {
+    const block = document.createElement('div');
+    block.className = 'exam-q-block';
+    block.style.marginBottom = '16px';
+    const modelHtml = item.q.model.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    block.innerHTML = `
+      <div class="exam-qnum">Q${20+i+1} · ${item.q.marks} marks</div>
+      <div class="exam-question" style="white-space:pre-line">${item.q.q}</div>
+      <div style="margin-bottom:10px">
+        <div style="font-size:0.8rem;color:var(--text2);margin-bottom:6px">Your answer:</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.88rem;line-height:1.6;color:${item.answer?'var(--text)':'var(--text2)'};white-space:pre-wrap">${item.answer || '(No answer provided)'}</div>
+      </div>
+      <div class="exam-model-answer" id="model-${i}" style="display:block">
+        <strong>📖 Model Answer:</strong><br><br>${modelHtml}
+      </div>
+      <div class="exam-self-rate" id="rate-${i}" style="display:block">
+        <div class="exam-self-rate-label">How well did you answer this? (${item.q.marks} marks available)</div>
+        <div class="self-rate-btns">
+          <button class="self-rate-btn sr-full" onclick="rateSA(${i},'full',${item.q.marks})">✅ Full marks (${item.q.marks})</button>
+          <button class="self-rate-btn sr-partial" onclick="rateSA(${i},'partial',${Math.floor(item.q.marks/2)})">⚡ Partial (${Math.floor(item.q.marks/2)})</button>
+          <button class="self-rate-btn sr-miss" onclick="rateSA(${i},'miss',0)">❌ Missed it (0)</button>
+        </div>
+        <div id="rate-result-${i}" style="font-size:0.8rem;color:var(--text2);margin-top:6px"></div>
+      </div>
+    `;
+    saSection.appendChild(block);
+  });
+
+  // SA total display
+  saSection.innerHTML += `<div id="sa-total-display" style="text-align:center;padding:16px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;margin-top:8px">
+    <div style="font-size:0.85rem;color:var(--text2)">Short Answer Self-Score</div>
+    <div id="sa-score-num" style="font-size:2rem;font-weight:900;color:var(--warning)">0 / ${totalSAMarks}</div>
+    <div id="total-score-display" style="font-size:0.85rem;color:var(--text2);margin-top:4px">Rate all short answers to see your total score</div>
+  </div>`;
+
+  breakdown.appendChild(saSection);
+}
+
+function rateSA(i, level, marks) {
+  saRatings[i] = marks;
+  const btns = document.querySelectorAll(`#rate-${i} .self-rate-btn`);
+  btns.forEach(b => b.classList.remove('active'));
+  const cls = level==='full'?'.sr-full':level==='partial'?'.sr-partial':'.sr-miss';
+  document.querySelector(`#rate-${i} ${cls}`)?.classList.add('active');
+  document.getElementById(`rate-result-${i}`).textContent = `→ You gave yourself ${marks} marks for this question`;
+
+  // Update totals
+  const rated = Object.values(saRatings);
+  const saTotal = rated.reduce((s,v)=>s+v,0);
+  const totalSAMarks = examSA.reduce((s,q)=>s+q.marks,0);
+  const mcqScore = examMCQ.filter((_,i) => {
+    const sel = document.querySelector(`input[name="mcq-${i}"]:checked`);
+    return sel && parseInt(sel.value) === examMCQ[i].ans;
+  }).length;
+
+  document.getElementById('sa-score-num').textContent = `${saTotal} / ${totalSAMarks}`;
+  const ratedAll = Object.keys(saRatings).length === examSA.length;
+  if (ratedAll) {
+    const grandTotal = mcqScore + saTotal;
+    const grandMax = 20 + totalSAMarks;
+    const grandPct = Math.round(grandTotal/grandMax*100);
+    document.getElementById('total-score-display').innerHTML = `<strong style="color:var(--accent)">TOTAL: ${grandTotal} / ${grandMax} (${grandPct}%)</strong>`;
+    addXP(50);
+    showToast('🎉 Exam graded! +50 XP', 'success', 3000);
+  }
+}
 </script>
 </body>
 </html>
