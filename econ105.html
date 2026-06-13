@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECON 105 Study Arena — Macroeconomics</title>
+<style>
+:root{
+  --bg:#0a0e1a; --surface:#111827; --surface2:#1e2a3a;
+  --accent:#00c896; --accent2:#9b59b6; --accent3:#f5b041;
+  --danger:#ef4444; --warning:#f59e0b; --ok:#10b981;
+  --text:#f1f5f9; --text2:#94a3b8; --border:#1e3a4f;
+  --card-bg:#131f2e; --glow:0 0 20px rgba(0,200,150,0.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--text); overflow-x:hidden;
+}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh}
+.screen{display:none;flex-direction:column;align-items:center;padding:20px;min-height:100vh}
+.screen.active{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+.btn{
+  background:linear-gradient(135deg,var(--accent),#06b6a4);
+  color:#04201a;font-weight:700;padding:12px 22px;border-radius:12px;
+  font-size:15px;transition:transform .15s,box-shadow .15s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--glow)}
+.btn.alt{background:linear-gradient(135deg,var(--accent2),#7c3aed);color:#fff}
+.btn.ghost{background:var(--surface2);color:var(--text)}
+.btn.small{padding:8px 14px;font-size:13px}
+.back-btn{
+  position:absolute;left:16px;top:16px;background:var(--surface2);
+  color:var(--text);padding:8px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:5;
+}
+.back-btn:hover{background:var(--surface)}
+
+/* HOME */
+.logo{font-size:clamp(32px,7vw,58px);font-weight:900;text-align:center;margin-top:40px;
+  background:linear-gradient(120deg,var(--accent),var(--accent2),var(--accent3));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 22px rgba(0,200,150,0.25));}
+.subtitle{color:var(--text2);font-size:clamp(14px,2.5vw,18px);text-align:center;margin:8px 0 4px}
+.tagline{color:var(--accent);font-size:13px;text-align:center;margin-bottom:18px}
+.stats-bar{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:6px 0 26px}
+.stat{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:12px 18px;text-align:center;min-width:96px}
+.stat .num{font-size:24px;font-weight:800;color:var(--accent)}
+.stat .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;max-width:1000px;width:100%;padding-bottom:50px}
+.mode-card{background:var(--card-bg);border:1px solid var(--border);border-radius:18px;padding:22px;cursor:pointer;
+  transition:transform .18s,box-shadow .18s,border-color .18s;position:relative;overflow:hidden}
+.mode-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:var(--glow)}
+.mode-card .icon{font-size:38px;margin-bottom:10px}
+.mode-card .name{font-size:19px;font-weight:800;margin-bottom:6px}
+.mode-card .desc{font-size:13px;color:var(--text2);line-height:1.4}
+.badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:800;padding:4px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.badge-easy{background:rgba(16,185,129,.18);color:#34d399}
+.badge-medium{background:rgba(245,158,11,.18);color:#fbbf24}
+.badge-hard{background:rgba(239,68,68,.18);color:#f87171}
+.badge-wild{background:rgba(155,89,182,.2);color:#c084fc}
+.badge-multi{background:rgba(0,200,150,.18);color:#2dd4bf}
+
+/* HEADERS */
+.screen-header{width:100%;max-width:900px;display:flex;align-items:center;justify-content:space-between;margin:50px 0 18px;flex-wrap:wrap;gap:10px}
+.screen-title{font-size:24px;font-weight:800}
+.score-chip{background:var(--surface2);padding:8px 16px;border-radius:20px;font-weight:700;font-size:14px}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:900px;margin-bottom:18px}
+.filter-btn{background:var(--surface2);color:var(--text2);padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;transition:.15s}
+.filter-btn.active{background:var(--accent);color:#04201a}
+
+/* FLASHCARDS */
+.card-container{perspective:1500px;width:100%;max-width:560px;height:340px;margin:10px auto}
+.card-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d;cursor:pointer}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;border:1px solid var(--border)}
+.card-front{background:linear-gradient(150deg,var(--card-bg),var(--surface))}
+.card-back{background:linear-gradient(150deg,#10261f,#0d1f2e);transform:rotateY(180deg);border-color:var(--accent)}
+.card-face .tag{position:absolute;top:16px;left:16px;font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.card-face .hint{position:absolute;bottom:14px;font-size:11px;color:var(--text2)}
+.card-face .q{font-size:21px;font-weight:700;line-height:1.4}
+.card-face .a{font-size:17px;line-height:1.5;color:#d1fae5}
+.fc-controls{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;justify-content:center}
+.progress-row{width:100%;max-width:560px;margin:8px auto}
+.pbar{height:8px;background:var(--surface2);border-radius:10px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .3s}
+.ptext{font-size:12px;color:var(--text2);text-align:center;margin-top:6px}
+
+/* QUIZ */
+.quiz-box{width:100%;max-width:680px;background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:26px}
+.qnum{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.qtext{font-size:20px;font-weight:700;margin:10px 0 20px;line-height:1.4}
+.opt{display:block;width:100%;text-align:left;background:var(--surface2);color:var(--text);padding:14px 18px;border-radius:12px;margin-bottom:10px;font-size:15px;border:2px solid transparent;transition:.15s}
+.opt:hover{border-color:var(--accent)}
+.opt.correct{background:rgba(16,185,129,.22);border-color:var(--ok)}
+.opt.wrong{background:rgba(239,68,68,.2);border-color:var(--danger)}
+.opt.disabled{pointer-events:none;opacity:.85}
+.explain{background:var(--surface);border-left:3px solid var(--accent);padding:14px;border-radius:8px;margin-top:14px;font-size:14px;color:var(--text2);line-height:1.5;display:none}
+.explain.show{display:block}
+.result-box{text-align:center;max-width:600px}
+.result-score{font-size:64px;font-weight:900;color:var(--accent);margin:10px 0}
+
+/* CONNECT 4 */
+.c4-board{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;background:#0d2840;padding:14px;border-radius:16px;max-width:480px;width:100%;margin:14px auto}
+.c4-cell{aspect-ratio:1;background:var(--bg);border-radius:50%;cursor:pointer;transition:.15s;border:2px solid #16324a}
+.c4-cell:hover{border-color:var(--accent)}
+.c4-cell.p1{background:radial-gradient(circle at 35% 30%,#ffe27a,#f5b041)}
+.c4-cell.p2{background:radial-gradient(circle at 35% 30%,#ff9a9a,#ef4444)}
+.c4-cell.win{box-shadow:0 0 16px 4px var(--accent);border-color:var(--accent)}
+.c4-status{font-size:18px;font-weight:700;margin:8px 0;text-align:center}
+.turn-pill{display:inline-block;padding:6px 16px;border-radius:20px;font-weight:700;font-size:14px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card-bg);border:1px solid var(--accent);border-radius:18px;padding:26px;max-width:520px;width:100%}
+.modal .q{font-size:18px;font-weight:700;margin-bottom:16px;line-height:1.4}
+
+/* SPEED / BLITZ */
+.big-timer{font-size:48px;font-weight:900;color:var(--accent)}
+.tf-btns{display:flex;gap:16px;justify-content:center;margin-top:24px}
+.tf-btn{font-size:24px;font-weight:900;padding:24px 50px;border-radius:18px}
+.tf-true{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.tf-false{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.streak{font-size:20px;font-weight:800;color:var(--accent3)}
+.feedback{font-size:60px;height:70px;margin:10px}
+.leaderboard{width:100%;max-width:420px;margin-top:18px}
+.lb-row{display:flex;justify-content:space-between;background:var(--surface2);padding:10px 16px;border-radius:10px;margin-bottom:8px;font-weight:600}
+.lb-row .rank{color:var(--accent)}
+
+/* WORD MATCH */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:760px;width:100%}
+.match-col{display:flex;flex-direction:column;gap:10px}
+.match-item{background:var(--surface2);padding:14px;border-radius:10px;font-size:14px;cursor:pointer;border:2px solid transparent;transition:.15s;line-height:1.35}
+.match-item:hover{border-color:var(--accent)}
+.match-item.selected{border-color:var(--accent2);background:rgba(155,89,182,.18)}
+.match-item.matched{background:rgba(16,185,129,.2);border-color:var(--ok);pointer-events:none;opacity:.7}
+.match-item.wrong{border-color:var(--danger);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* TRIVIA */
+.trivia-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;max-width:700px;width:100%}
+.cat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:.15s}
+.cat-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.cat-card.done{opacity:.4;pointer-events:none}
+.players-row{display:flex;gap:14px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+.player-score{background:var(--surface2);padding:12px 22px;border-radius:14px;text-align:center;border:2px solid transparent}
+.player-score.active{border-color:var(--accent);box-shadow:var(--glow)}
+.player-score .pname{font-size:13px;color:var(--text2)}
+.player-score .pval{font-size:26px;font-weight:900;color:var(--accent)}
+
+.input-field{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:10px;font-size:15px;width:100%;max-width:300px;margin:6px 0}
+.center{text-align:center}
+.muted{color:var(--text2);font-size:14px;line-height:1.5}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.mt{margin-top:16px}
+.exam-nav{display:flex;flex-wrap:wrap;gap:6px;max-width:680px;margin:12px auto}
+.exam-dot{width:34px;height:34px;border-radius:8px;background:var(--surface2);color:var(--text2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.exam-dot.answered{background:var(--accent);color:#04201a}
+.exam-dot.current{outline:2px solid var(--accent2)}
+.written-answer{width:100%;min-height:120px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;resize:vertical}
+.model-answer{background:var(--surface);border-left:3px solid var(--accent3);padding:14px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.5;color:var(--text2)}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="app">
+
+<!-- HOME -->
+<section id="home" class="screen active">
+  <div class="logo">ECON 105 Study Arena</div>
+  <div class="subtitle">Macroeconomics · Weeks 7–12 Final Exam Prep</div>
+  <div class="tagline">Flashcards · Quizzes · Connect Four · Practice Exam · Multiplayer Games</div>
+  <div class="stats-bar">
+    <div class="stat"><div class="num" id="stat-cards">0</div><div class="lbl">Flashcards</div></div>
+    <div class="stat"><div class="num" id="stat-mcq">0</div><div class="lbl">Quiz Qs</div></div>
+    <div class="stat"><div class="num" id="stat-tf">0</div><div class="lbl">True/False</div></div>
+    <div class="stat"><div class="num" id="stat-best">0</div><div class="lbl">Best Streak</div></div>
+  </div>
+  <div class="modes-grid" id="modes-grid"></div>
+</section>
+
+<!-- FLASHCARDS -->
+<section id="flashcards" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🎴 Flashcards</div>
+    <div class="score-chip" id="fc-known">Known: 0</div></div>
+  <div class="filter-bar" id="fc-filters"></div>
+  <div class="progress-row"><div class="pbar"><div class="pfill" id="fc-pfill"></div></div><div class="ptext" id="fc-ptext">0 / 0</div></div>
+  <div class="card-container"><div class="card-inner" id="fc-card" onclick="flipCard()">
+    <div class="card-face card-front"><span class="tag" id="fc-tag"></span><div class="q" id="fc-q"></div><span class="hint">Click to flip</span></div>
+    <div class="card-face card-back"><span class="tag">Answer</span><div class="a" id="fc-a"></div><span class="hint">Click to flip back</span></div>
+  </div></div>
+  <div class="fc-controls">
+    <button class="btn ghost small" onclick="prevCard()">← Prev</button>
+    <button class="btn alt small" onclick="markCard(false)">🔁 Review</button>
+    <button class="btn small" onclick="markCard(true)">✓ Known</button>
+    <button class="btn ghost small" onclick="nextCard()">Next →</button>
+    <button class="btn ghost small" onclick="shuffleCards()">🔀 Shuffle</button>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">📝 Multiple Choice Quiz</div>
+    <div class="score-chip" id="quiz-score">Score: 0</div></div>
+  <div id="quiz-setup" class="center">
+    <p class="muted">Pick a topic. Each quiz is 10 questions.</p>
+    <div class="filter-bar mt" id="quiz-filters"></div>
+    <button class="btn mt" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+  <div id="quiz-play" style="display:none;width:100%;display:none;flex-direction:column;align-items:center">
+    <div class="quiz-box">
+      <div class="qnum" id="quiz-qnum"></div>
+      <div class="qtext" id="quiz-qtext"></div>
+      <div id="quiz-opts"></div>
+      <div class="explain" id="quiz-explain"></div>
+      <div class="center mt"><button class="btn" id="quiz-next" onclick="nextQuizQ()" style="display:none">Next →</button></div>
+    </div>
+  </div>
+  <div id="quiz-result" style="display:none" class="result-box">
+    <h2>Quiz Complete!</h2>
+    <div class="result-score" id="quiz-final"></div>
+    <p class="muted" id="quiz-msg"></p>
+    <div id="quiz-review" style="text-align:left;margin-top:18px"></div>
+    <div class="row mt"><button class="btn" onclick="startQuiz()">Play Again</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+<!-- CONNECT 4 -->
+<section id="connect4" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🔴 Connect Four</div></div>
+  <div id="c4-setup" class="center">
+    <p class="muted">Answer an economics question correctly to drop your piece!</p>
+    <div class="mt"><input class="input-field" id="c4-p1" placeholder="Player 1 name" value="Player 1"></div>
+    <div><input class="input-field" id="c4-p2" placeholder="Player 2 name" value="Player 2"></div>
+    <div class="row mt">
+      <button class="btn" onclick="startC4(false)">2 Players</button>
+      <button class="btn alt" onclick="startC4(true)">vs Computer 🤖</button>
+    </div>
+  </div>
+  <div id="c4-game" style="display:none;flex-direction:column;align-items:center;width:100%">
+    <div class="c4-status"><span class="turn-pill" id="c4-turn"></span></div>
+    <div class="c4-board" id="c4-board"></div>
+    <div class="row mt"><button class="btn ghost small" onclick="startC4Reset()">Restart</button></div>
+  </div>
+</section>
+
+<!-- PRACTICE EXAM -->
+<section id="exam" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🎓 Practice Exam</div>
+    <div class="score-chip" id="exam-timer">45:00</div></div>
+  <div id="exam-setup" class="center">
+    <p class="muted">20 questions · 45-minute timer · mix of multiple choice and written.<br>Written answers are self-marked against a model answer.</p>
+    <button class="btn mt" onclick="startExam()">Begin Exam →</button>
+  </div>
+  <div id="exam-play" style="display:none;width:100%;flex-direction:column;align-items:center">
+    <div class="exam-nav" id="exam-nav"></div>
+    <div class="quiz-box">
+      <div class="qnum" id="exam-qnum"></div>
+      <div class="qtext" id="exam-qtext"></div>
+      <div id="exam-body"></div>
+    </div>
+    <div class="row mt">
+      <button class="btn ghost small" onclick="examNav(-1)">← Prev</button>
+      <button class="btn ghost small" onclick="examNav(1)">Next →</button>
+      <button class="btn small" onclick="submitExam()">Submit Exam</button>
+    </div>
+  </div>
+  <div id="exam-result" style="display:none" class="result-box">
+    <h2>Exam Submitted!</h2>
+    <div class="result-score" id="exam-final"></div>
+    <p class="muted">Auto-scored multiple choice. Review written answers below against the model answers.</p>
+    <div id="exam-review" style="text-align:left;margin-top:18px"></div>
+    <div class="row mt"><button class="btn" onclick="startExam()">Retake</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+<!-- SPEED ROUND -->
+<section id="speed" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">⚡ Speed Round</div></div>
+  <div id="speed-setup" class="center">
+    <p class="muted">60 seconds. Answer as many as you can. Compete for the high score!</p>
+    <div class="mt"><input class="input-field" id="speed-name" placeholder="Your name" value="Player"></div>
+    <button class="btn mt" onclick="startSpeed()">Start ⚡</button>
+    <div class="leaderboard"><h3 class="mt">🏆 Top Scores</h3><div id="speed-lb"></div></div>
+  </div>
+  <div id="speed-play" style="display:none;flex-direction:column;align-items:center;width:100%">
+    <div class="big-timer" id="speed-timer">60</div>
+    <div class="row"><span class="score-chip" id="speed-correct">✓ 0</span><span class="score-chip" id="speed-wrong">✗ 0</span></div>
+    <div class="quiz-box mt"><div class="qtext" id="speed-q"></div><div id="speed-opts"></div></div>
+  </div>
+  <div id="speed-result" style="display:none" class="result-box">
+    <h2>Time's Up!</h2>
+    <div class="result-score" id="speed-final"></div>
+    <p class="muted" id="speed-msg"></p>
+    <div class="leaderboard"><h3>🏆 Leaderboard</h3><div id="speed-lb2"></div></div>
+    <div class="row mt"><button class="btn" onclick="show('speed-setup','speed')">Play Again</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+<!-- WORD MATCH -->
+<section id="wordmatch" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🔗 Word Match</div>
+    <div class="score-chip" id="wm-score">0 / 0</div></div>
+  <div id="wm-setup" class="center">
+    <p class="muted">Match each economics term to its definition. 10 pairs per round.</p>
+    <button class="btn mt" onclick="startWordMatch()">Start →</button>
+  </div>
+  <div id="wm-play" style="display:none;flex-direction:column;align-items:center;width:100%">
+    <div class="match-grid"><div class="match-col" id="wm-terms"></div><div class="match-col" id="wm-defs"></div></div>
+  </div>
+  <div id="wm-result" style="display:none" class="result-box">
+    <h2>All Matched! 🎉</h2>
+    <div class="result-score" id="wm-final"></div>
+    <p class="muted" id="wm-time"></p>
+    <div class="row mt"><button class="btn" onclick="startWordMatch()">Play Again</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+<!-- TRUE/FALSE BLITZ -->
+<section id="blitz" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🔥 True/False Blitz</div>
+    <div class="score-chip" id="blitz-best">Best: 0</div></div>
+  <div id="blitz-setup" class="center">
+    <p class="muted">True or False? 5 seconds per question. Build your streak — one wrong ends it!</p>
+    <button class="btn mt" onclick="startBlitz()">Start 🔥</button>
+  </div>
+  <div id="blitz-play" style="display:none;flex-direction:column;align-items:center;width:100%">
+    <div class="streak" id="blitz-streak">🔥 Streak: 0</div>
+    <div class="big-timer" id="blitz-timer" style="font-size:32px">5</div>
+    <div class="quiz-box mt"><div class="qtext center" id="blitz-q"></div></div>
+    <div class="feedback center" id="blitz-fb"></div>
+    <div class="tf-btns">
+      <button class="tf-btn tf-true" onclick="answerBlitz(true)">TRUE</button>
+      <button class="tf-btn tf-false" onclick="answerBlitz(false)">FALSE</button>
+    </div>
+  </div>
+  <div id="blitz-result" style="display:none" class="result-box">
+    <h2>Streak Ended!</h2>
+    <div class="result-score" id="blitz-final"></div>
+    <p class="muted" id="blitz-msg"></p>
+    <div class="row mt"><button class="btn" onclick="startBlitz()">Try Again</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+<!-- TRIVIA -->
+<section id="trivia" class="screen">
+  <button class="back-btn" onclick="goHome()">← Home</button>
+  <div class="screen-header"><div class="screen-title">🧠 Economics Trivia (2-Player)</div></div>
+  <div id="trivia-setup" class="center">
+    <p class="muted">Take turns picking categories. Harder questions are worth more points!</p>
+    <div class="mt"><input class="input-field" id="trivia-p1" placeholder="Player 1" value="Player 1"></div>
+    <div><input class="input-field" id="trivia-p2" placeholder="Player 2" value="Player 2"></div>
+    <button class="btn mt" onclick="startTrivia()">Start →</button>
+  </div>
+  <div id="trivia-play" style="display:none;flex-direction:column;align-items:center;width:100%">
+    <div class="players-row" id="trivia-scores"></div>
+    <h3 id="trivia-turn" class="center"></h3>
+    <p class="muted center" id="trivia-prompt">Choose a category:</p>
+    <div class="trivia-cats mt" id="trivia-cats"></div>
+  </div>
+  <div id="trivia-result" style="display:none" class="result-box">
+    <h2 id="trivia-winner"></h2>
+    <div id="trivia-final" class="mt"></div>
+    <div class="row mt"><button class="btn" onclick="show('trivia-setup','trivia')">Rematch</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+  </div>
+</section>
+
+</div>
+
+<!-- C4 question modal -->
+<div class="modal-overlay" id="c4-modal">
+  <div class="modal">
+    <div class="q" id="c4-mq"></div>
+    <div id="c4-mopts"></div>
+  </div>
+</div>
+
+<!-- Trivia question modal -->
+<div class="modal-overlay" id="trivia-modal">
+  <div class="modal">
+    <div class="qnum" id="trivia-mtag"></div>
+    <div class="q" id="trivia-mq"></div>
+    <div id="trivia-mopts"></div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const FLASHCARDS = [
+ // Week 7 - Money & Banking
+ {w:7,q:"What are the three functions of money?",a:"Medium of exchange, unit of account, and store of value."},
+ {w:7,q:"What is fiat money?",a:"Money with value by government decree ('legal tender') — not backed by a physical commodity like gold."},
+ {w:7,q:"What is the difference between narrow money (M1) and broad money?",a:"Narrow money (M1) = cash + transaction account deposits. Broad money also includes term/savings deposits. Notes & coins are only ~2% of broad money."},
+ {w:7,q:"When was the Reserve Bank of New Zealand (RBNZ) established?",a:"1934."},
+ {w:7,q:"What are the three motives for holding money?",a:"Transactions (everyday purchases), precautionary ('just in case'), and speculative (asset/investment) motives."},
+ {w:7,q:"What is the money multiplier?",a:"1 ÷ reserve ratio — the maximum expansion of the money supply from an initial deposit under fractional reserve banking."},
+ {w:7,q:"What is the difference between an illiquid and an insolvent bank?",a:"Illiquid = cannot access cash quickly enough even though assets > liabilities. Insolvent = liabilities exceed assets."},
+ {w:7,q:"What is a bank run?",a:"When many depositors try to withdraw simultaneously, overwhelming a fractional-reserve bank that doesn't hold all deposits as cash."},
+ {w:7,q:"What happened to cash demand after the 2011 Christchurch earthquake?",a:"It spiked to ~$145m vs a ~$22m monthly average — roughly 7× normal — showing the precautionary motive."},
+ {w:7,q:"Who was A.W. Phillips and what was the MONIAC?",a:"A NZ economist who built the MONIAC (1949), a hydraulic machine that modelled the economy with flowing water."},
+ // Week 8 - OCR & Monetary Policy
+ {w:8,q:"What is the OCR?",a:"The Official Cash Rate — the RBNZ's main policy interest rate, influencing all other interest rates in the economy."},
+ {w:8,q:"In the market for money, why is the money supply (Ms) curve vertical?",a:"Because the RBNZ sets the money supply (via the OCR); it is not responsive to the interest rate."},
+ {w:8,q:"How is a rise in the OCR shown in the market for money?",a:"As the vertical Ms curve shifting left, raising the equilibrium interest rate."},
+ {w:8,q:"What is the neutral interest rate?",a:"The OCR consistent with inflation at target AND the economy at potential output (Yf)."},
+ {w:8,q:"What is an LSAP and why was it used during COVID?",a:"Large-Scale Asset Purchases — buying government bonds to inject money. Used because the OCR was already very low (0.25%) so conventional policy was limited."},
+ {w:8,q:"How does a lower OCR stimulate the economy?",a:"Lower interest rates → cheaper borrowing → more consumption & investment, a lower exchange rate (more exports), and higher asset prices → higher AD."},
+ {w:8,q:"What is the transmission mechanism of monetary policy?",a:"OCR change → bank interest rates → consumption, investment, exchange rate, asset prices & expectations → aggregate demand → output & inflation."},
+ {w:8,q:"How has the RBNZ's mandate changed recently?",a:"It changed in 2019 (added employment), 2021, mid-2023, and Dec 2023 (back to single price-stability focus) — it has NOT been unchanged since 1990."},
+ // Week 9 - Quantity Theory & Inflation
+ {w:9,q:"State the Quantity Theory of Money equation.",a:"MV = PY, where M = money supply, V = velocity, P = price level, Y = real output."},
+ {w:9,q:"What is the velocity of circulation?",a:"How many times each dollar is used to generate nominal GDP in a period."},
+ {w:9,q:"What does money neutrality mean?",a:"Changes in the money supply affect only nominal variables (prices) in the long run, not real variables (output, employment)."},
+ {w:9,q:"What is the short-run Phillips curve?",a:"A downward-sloping (negative) relationship between inflation and unemployment in the short run."},
+ {w:9,q:"What does the long-run Phillips curve look like?",a:"Vertical at the natural rate of unemployment — there is no permanent inflation-unemployment trade-off."},
+ {w:9,q:"What causes hyperinflation?",a:"Rapid, excessive growth of the money supply (often to finance government deficits), MV growing far faster than Y."},
+ {w:9,q:"What was the most extreme hyperinflation ever recorded?",a:"Hungary in 1946 (100 million trillion pengő); others: Germany 1923, Zimbabwe 2008, Venezuela."},
+ {w:9,q:"Give three reasons NZ's post-COVID inflation 'got away'.",a:"Massive monetary/fiscal stimulus (low OCR + LSAP), supply-chain disruptions, and rising inflation expectations."},
+ {w:9,q:"Why is unexpected inflation costly?",a:"It redistributes wealth (from lenders/savers to borrowers), creates uncertainty, and erodes the value of fixed nominal incomes/savings."},
+ // Week 10 - AD/AS Model
+ {w:10,q:"Why does the Long-Run Aggregate Supply (LAS) curve sit vertical?",a:"At potential output (Yf), determined by real factors (capital, labour, technology) — not the price level."},
+ {w:10,q:"Why does the Short-Run Aggregate Supply (SAS) curve slope upward?",a:"Nominal wages are fixed in the short run, so a higher price level makes production more profitable, raising output."},
+ {w:10,q:"Name factors that shift AD to the right.",a:"Higher government spending, lower taxes, lower OCR, higher consumer/business confidence, higher export demand, lower exchange rate."},
+ {w:10,q:"What is a positive output gap?",a:"When actual output Y > potential output Yf — the economy is producing above potential (inflationary)."},
+ {w:10,q:"What is a negative output gap?",a:"When Y < Yf — the economy is producing below potential (recessionary, with unemployment)."},
+ {w:10,q:"Which output gap self-corrects faster and why?",a:"A positive gap — wages rise easily, shifting SAS left to close it. A negative gap is slow because wages are sticky downward."},
+ {w:10,q:"What happens to NZ's AD if the rest of the world goes into recession?",a:"AD shifts left, because demand for NZ's exports falls."},
+ {w:10,q:"How does an increase in government spending affect the AD/AS model?",a:"AD shifts right → in the short run higher output and price level (positive output gap); over time SAS shifts left back to Yf with higher prices."},
+ // Week 11 - Growth & Trade
+ {w:11,q:"What is the production function in the Solow growth model and why is it concave?",a:"Output as a function of capital per worker; concave because of diminishing returns to capital."},
+ {w:11,q:"How does technology (T) affect the production function?",a:"It shifts the entire function upward — more output for any level of capital and labour."},
+ {w:11,q:"What is convergence in growth theory?",a:"Poorer countries tend to grow faster than rich ones (steeper part of the production function), narrowing the gap."},
+ {w:11,q:"What does the North vs South Korea comparison illustrate?",a:"Institutions (inclusive vs extractive) matter enormously for long-run growth, despite shared history and culture."},
+ {w:11,q:"What did the UN diplomat parking ticket study show?",a:"Diplomats from high-corruption countries had far more unpaid parking violations, suggesting corruption reflects deep cultural norms."},
+ {w:11,q:"What is the 'flying geese' pattern?",a:"Countries move from labour-intensive to higher-value industries as they develop, with poorer countries taking over the lower-value production."},
+ {w:11,q:"Why does free trade tend to face political resistance ('concentrated benefits, dispersed costs')?",a:"Protected industries gain a lot and lobby hard; consumers each lose only a little and rarely organise."},
+ {w:11,q:"How much richer are 'always open' economies vs 'always closed'?",a:"Roughly $17,521 vs $2,362 GDP per capita."},
+ {w:11,q:"What was the post-WWII trade consensus built on?",a:"The idea that peace and prosperity require economic growth through international trade and cooperation."},
+ // Week 12 - Inequality, Poverty, Government, Tax, Crises
+ {w:12,q:"What is the Lorenz curve?",a:"A plot of the cumulative % of income against the cumulative % of population, ordered from poorest to richest."},
+ {w:12,q:"What is the Gini coefficient?",a:"Area A ÷ (Area A + Area B) on the Lorenz diagram. 0 = perfect equality, 1 = perfect inequality."},
+ {w:12,q:"What is absolute vs relative poverty?",a:"Absolute = subsistence, the minimum to sustain life. Relative = below a threshold (e.g. 50–60% of median income) compared to others in society."},
+ {w:12,q:"Under a Relative-to-Contemporary (REL) measure, when can poverty fall?",a:"Only if the bottom of the income distribution grows faster than the median."},
+ {w:12,q:"What shape describes NZ's income inequality over time?",a:"A 'saucer shape': fell to ~1975, rose to the early 1990s, then stabilised."},
+ {w:12,q:"What is the EMTR?",a:"Effective Marginal Tax Rate — the proportion of an extra dollar of income lost to BOTH income tax and benefit/Working-for-Families abatement."},
+ {w:12,q:"What is fiscal drag (bracket creep)?",a:"Inflation pushes nominal wages into higher tax brackets, raising the average tax rate even without real income gains."},
+ {w:12,q:"What are horizontal and vertical equity in taxation?",a:"Horizontal: people with the same ability to pay are treated the same. Vertical: those with greater ability to pay should pay more."},
+ {w:12,q:"Why is NZ's GST considered international 'best practice'?",a:"Broad base, very few exemptions, raises revenue efficiently — though it is regressive."},
+ {w:12,q:"What does the Public Finance Act require of government budgets?",a:"A balanced budget on average over the economic cycle — not a surplus every single year."},
+ {w:12,q:"What are automatic stabilisers?",a:"Tax and welfare changes that happen automatically (e.g. more benefits in a recession) without new policy decisions, smoothing the cycle."},
+ {w:12,q:"What was Germany's unemployment rate in 1932?",a:"43.5%."},
+ {w:12,q:"Why was deflation so damaging in the Great Depression?",a:"Fixed nominal debt + falling prices raised the real debt burden; sticky nominal wages + falling prices raised real wages → more unemployment."},
+ {w:12,q:"What were subprime mortgages in the GFC?",a:"Loans to borrowers with small/no deposit, low or undocumented income, and high payment-to-income ratios."},
+ {w:12,q:"What is securitisation?",a:"Packaging loans (e.g. mortgages) into tradeable securities (MBS/CDOs) and selling them to investors."},
+ {w:12,q:"What does leverage do?",a:"It magnifies BOTH gains and losses on an investment."},
+ {w:12,q:"What is the 'dog poo in the cookie dough' problem of the GFC?",a:"No one knew which institutions held toxic subprime assets, so interbank lending froze across the whole system."},
+ {w:12,q:"What is the Policy Trilemma (Impossible Trinity)?",a:"A country can have at most 2 of: a fixed exchange rate, free capital mobility, and an independent monetary policy. NZ chooses free capital mobility + independent monetary policy (floating exchange rate)."},
+];
+
+const MCQ = [
+ {w:9,q:"Money neutrality implies that in the long run, an increase in the money supply affects:",o:["Only the price level (nominal variables)","Real output permanently","The natural rate of unemployment","The level of technology"],c:0,e:"In the long run money is neutral — it changes nominal variables (prices) but not real output."},
+ {w:8,q:"In the market for money, the money supply (Ms) curve is:",o:["Vertical, set by the RBNZ","Upward sloping","Downward sloping","Horizontal at the OCR"],c:0,e:"The RBNZ sets the money supply via the OCR, so Ms is vertical (interest-rate independent)."},
+ {w:8,q:"A rise in the OCR is shown in the market-for-money diagram as:",o:["Ms shifting left","Ms shifting right","Money demand shifting right","A movement along Ms"],c:0,e:"Tighter policy = less money = Ms shifts left, raising the equilibrium interest rate."},
+ {w:7,q:"Notes and coins are approximately what share of NZ's broad money supply?",o:["About 2%","About 25%","About 50%","About 10%"],c:0,e:"Almost all money is electronic bank deposits; physical cash is only ~2% of broad money."},
+ {w:9,q:"The short-run Phillips curve shows:",o:["A negative relationship between inflation and unemployment","A positive relationship between inflation and unemployment","No relationship","A vertical line"],c:0,e:"In the short run, lower unemployment is associated with higher inflation (downward-sloping curve)."},
+ {w:9,q:"The long-run Phillips curve is:",o:["Vertical at the natural rate of unemployment","Downward sloping","Horizontal","Upward sloping"],c:0,e:"In the long run there is no inflation-unemployment trade-off; it's vertical at the natural rate."},
+ {w:10,q:"A positive output gap occurs when:",o:["Y > Yf (output above potential)","Y < Yf (output below potential)","AD = LAS","Inflation is below target"],c:0,e:"A positive output gap means the economy is producing above potential — inflationary pressure."},
+ {w:12,q:"The Gini coefficient equals 0 when:",o:["Income is perfectly equally distributed","Income is perfectly unequally distributed","Half the income goes to the top 10%","The Lorenz curve is a right angle"],c:0,e:"Gini = 0 is perfect equality (Lorenz curve = 45° line); Gini = 1 is perfect inequality."},
+ {w:12,q:"GST in New Zealand is generally regarded as regressive because:",o:["Lower-income households spend a larger share of income subject to GST","Higher earners pay a higher GST rate","It exempts food and rent","It only applies to luxury goods"],c:0,e:"Poorer households consume a larger fraction of their income, so a flat GST takes a bigger share of it."},
+ {w:12,q:"Deflation increases the real burden of debt because:",o:["Nominal debt is fixed while prices (and incomes) fall","Interest rates rise automatically","Banks demand early repayment","The money supply expands"],c:0,e:"With fixed nominal debt, falling prices mean each dollar owed is worth more in real terms."},
+ {w:12,q:"Leverage in investment:",o:["Magnifies both gains and losses","Magnifies only gains","Magnifies only losses","Eliminates risk"],c:0,e:"Borrowing to invest amplifies returns in both directions."},
+ {w:7,q:"The RBNZ was established as NZ's central bank in:",o:["1934","1897","1945","1984"],c:0,e:"The Reserve Bank of New Zealand was established in 1934."},
+ {w:7,q:"Fiat money derives its value from:",o:["Government decree (legal tender)","Gold backing","The materials it's made of","International treaties"],c:0,e:"Fiat money has value because the government declares it legal tender, not from any commodity backing."},
+ {w:7,q:"The money multiplier equals:",o:["1 ÷ reserve ratio","Reserve ratio ÷ deposits","Deposits × reserve ratio","Velocity × money supply"],c:0,e:"The simple money multiplier is the reciprocal of the reserve ratio."},
+ {w:7,q:"An illiquid (but solvent) bank is one that:",o:["Cannot access cash quickly enough, though assets > liabilities","Has liabilities exceeding assets","Has been declared bankrupt","Holds too much cash"],c:0,e:"Illiquid = short-term cash shortage; insolvent = liabilities exceed assets."},
+ {w:9,q:"In the equation MV = PY, V represents:",o:["The velocity of circulation","The volume of trade","Variable costs","Real value added"],c:0,e:"V is velocity — how many times each dollar is spent on final goods in a period."},
+ {w:11,q:"In the Solow model, the production function is concave because of:",o:["Diminishing returns to capital","Increasing returns to scale","Constant marginal product of labour","Falling population growth"],c:0,e:"Each extra unit of capital adds less output — diminishing returns."},
+ {w:11,q:"Technology in the growth model:",o:["Shifts the entire production function upward","Moves the economy along the function","Only affects capital","Has no long-run effect"],c:0,e:"Better technology raises output for any given capital and labour."},
+ {w:11,q:"The contrast between North and South Korea best illustrates the importance of:",o:["Institutions (inclusive vs extractive)","Natural resources","Population size","Military spending"],c:0,e:"Same people and culture, vastly different institutions → vastly different outcomes."},
+ {w:12,q:"The Policy Trilemma states a country can choose at most two of:",o:["Fixed exchange rate, free capital mobility, independent monetary policy","Inflation, unemployment, growth","Price stability, employment, exchange rate","Debt, deficit, spending"],c:0,e:"The Impossible Trinity: pick any two of fixed FX, free capital flows, independent monetary policy."},
+ {w:12,q:"New Zealand currently has which combination of the trilemma?",o:["Free capital mobility + independent monetary policy","Fixed exchange rate + free capital mobility","Fixed exchange rate + independent monetary policy","All three"],c:0,e:"NZ floats its exchange rate to keep free capital flows and independent monetary policy."},
+ {w:10,q:"The Long-Run Aggregate Supply (LAS) curve is:",o:["Vertical at potential output (Yf)","Upward sloping","Downward sloping","Horizontal"],c:0,e:"In the long run, output is set by real factors at Yf regardless of the price level."},
+ {w:10,q:"The Short-Run Aggregate Supply (SAS) curve slopes upward because:",o:["Fixed nominal wages make higher prices more profitable","Wages are fully flexible","Government spending rises with prices","Imports get cheaper"],c:0,e:"Sticky nominal wages mean a higher price level raises profits and output in the short run."},
+ {w:10,q:"If the rest of the world enters recession, NZ's AD:",o:["Shifts left (export demand falls)","Shifts right","Is unchanged","Becomes vertical"],c:0,e:"Lower foreign demand for NZ exports reduces aggregate demand."},
+ {w:10,q:"Which output gap tends to self-correct faster?",o:["A positive gap (wages rise easily)","A negative gap (wages fall easily)","Both equally","Neither without policy"],c:0,e:"Wages are flexible upward but sticky downward, so positive gaps close faster."},
+ {w:12,q:"Germany's unemployment rate in 1932 was about:",o:["43.5%","28.1%","12.0%","36.3%"],c:0,e:"Around 43.5% — one of the worst figures of the Great Depression."},
+ {w:12,q:"Subprime mortgages were characterised by all EXCEPT:",o:["Large deposits and high credit scores","Small or no deposit","Low/undocumented income","High payment-to-income ratio"],c:0,e:"Subprime borrowers were high-risk — the opposite of large deposits and high credit scores."},
+ {w:12,q:"Securitisation in the GFC refers to:",o:["Packaging mortgages into tradeable securities sold to investors","Government guarantees of deposits","Requiring banks to hold more capital","Central bank bond buying"],c:0,e:"Mortgages were bundled into MBS/CDOs and sold on to investors."},
+ {w:12,q:"The 'dog poo in the cookie dough' problem describes how:",o:["No one knew which institutions held toxic assets, freezing interbank lending","Subprime mixed with prime mortgages","Rating agencies downgraded everything at once","Governments couldn't identify which banks to bail out"],c:0,e:"Uncertainty over who held bad assets caused a system-wide freeze in lending."},
+ {w:12,q:"Fiscal drag (bracket creep) occurs when:",o:["Inflation pushes nominal wages into higher tax brackets without real income gains","Government spending rises in recessions","Tax cuts favour high earners","High taxes slow growth"],c:0,e:"Rising nominal incomes due to inflation raise the average tax rate even with no real income increase."},
+ {w:12,q:"Horizontal equity in taxation means:",o:["Those with the same ability to pay are treated the same","Higher earners pay more","Everyone pays the same dollar amount","Tax falls as income rises"],c:0,e:"Horizontal equity = equal treatment of equals."},
+ {w:12,q:"Vertical equity in taxation means:",o:["Those with greater ability to pay should pay more","Everyone pays the same %","Tax is spread evenly","Rates fall as income rises"],c:0,e:"Vertical equity = those who can afford more should pay more."},
+ {w:8,q:"The neutral interest rate is the OCR consistent with:",o:["Inflation at target and the economy at potential output","Zero real return","The average bank lending rate","The international benchmark rate"],c:0,e:"At the neutral rate, monetary policy is neither stimulating nor restraining the economy."},
+ {w:8,q:"During COVID the RBNZ used LSAP mainly because:",o:["The OCR was already very low so conventional policy was limited","The government required direct financing","FX reserves needed boosting","Banks refused to lend"],c:0,e:"With the OCR at 0.25%, the RBNZ turned to large-scale asset purchases (unconventional policy)."},
+ {w:11,q:"'Concentrated benefits, dispersed costs' explains why:",o:["Protected industries lobby hard while consumers barely organise","Tariff revenue concentrates in government","Trade benefits export sectors","Import barriers concentrate in one industry"],c:0,e:"Protectionism persists because winners are few and motivated; losers are many but each loses little."},
+ {w:11,q:"'Always open' economies have GDP per capita of roughly:",o:["$17,521 vs $2,362 for 'always closed'","$5,000 vs $2,000","$50,000 vs $25,000","$10,000 vs $8,000"],c:0,e:"Openness to trade is strongly associated with higher income per capita."},
+ {w:9,q:"The most extreme hyperinflation ever recorded was in:",o:["Hungary (1946)","Germany (1923)","Zimbabwe (2008)","Venezuela (2021)"],c:0,e:"Hungary 1946 holds the record — prices roughly doubling every ~15 hours at the peak."},
+ {w:7,q:"The precautionary motive for holding money is:",o:["Holding money 'just in case' for emergencies","Holding money for everyday purchases","Holding money as an investment","Avoiding interest charges"],c:0,e:"Precautionary balances are held against unexpected needs."},
+ {w:7,q:"After the 2011 Christchurch earthquake, cash demand:",o:["Spiked to ~7× the normal monthly average","Fell sharply","Stayed flat","Doubled briefly then crashed"],c:0,e:"It jumped to ~$145m vs ~$22m average — a clear precautionary spike."},
+ {w:11,q:"Convergence in growth theory means:",o:["Poor countries tend to grow faster than rich ones","Rich countries always grow faster","All countries grow at the same rate","Growth stops at high income"],c:0,e:"Diminishing returns make capital more productive in poor countries, so they can grow faster."},
+ {w:12,q:"NZ's income inequality over time is best described as:",o:["A 'saucer shape' — fell to ~1975, rose to early 1990s, then stabilised","Continuously rising since 1935","Continuously falling since WWII","Peaked in 1975 then fell"],c:0,e:"Inequality declined then rose sharply with 1980s–90s reforms, then levelled off."},
+ {w:12,q:"Absolute poverty is based on:",o:["Subsistence — the minimum needed to sustain life","Being below 60% of median income","Relative disadvantage","A material hardship index"],c:0,e:"Absolute poverty is a fixed subsistence threshold, unlike relative measures."},
+ {w:12,q:"Under a Relative-to-Contemporary measure, poverty can only fall if:",o:["The bottom grows faster than the median","Government raises welfare","Inflation falls","All incomes grow equally"],c:0,e:"Because the line moves with the median, only faster growth at the bottom reduces measured poverty."},
+ {w:10,q:"Which shifts AD to the right?",o:["An increase in government spending","A rise in oil prices","An appreciation of the exchange rate","A rise in nominal wages"],c:0,e:"Higher government spending raises aggregate demand; the others reduce AD or shift SAS."},
+ {w:9,q:"NZ's post-COVID inflation 'got away' largely because of:",o:["Heavy stimulus, supply shocks, and rising expectations","Falling money supply","A fixed exchange rate","High unemployment"],c:0,e:"Monetary + fiscal stimulus plus supply disruptions and de-anchored expectations drove inflation up."},
+ {w:12,q:"The Lehman Brothers bankruptcy (2008) is significant because:",o:["The failure of the 4th-largest US investment bank marked the peak of GFC panic","It was the first to issue MBS","It was the world's largest bank","It was the only bank bailed out"],c:0,e:"Lehman's collapse intensified the financial panic at the heart of the GFC."},
+ {w:11,q:"The 'superstar effect' on inequality means:",o:["Global markets let a few earn huge incomes from massive audiences","Stars pay less tax","Entertainment dominates GDP","Superstars create average-wage jobs"],c:0,e:"Technology and global reach let top performers capture outsized rewards."},
+ {w:9,q:"A.W. Phillips' MONIAC was:",o:["A hydraulic model of the economy (1949)","A mathematical inflation model","The first economic supercomputer","A money-supply statistic"],c:0,e:"The MONIAC used flowing water to simulate the circular flow of income."},
+ {w:8,q:"NZ's RBNZ mandate over recent years has:",o:["Changed several times (2019, 2021, 2023)","Been unchanged since 1990","Always targeted employment only","Never included price stability"],c:0,e:"The mandate was amended multiple times, most recently back toward a single price-stability focus."},
+ {w:12,q:"NZ's GST is internationally regarded as:",o:["'Best practice' — broad base, few exemptions","Too high at 15%","Too narrow","Regressive and abolished"],c:0,e:"Its broad base and minimal exemptions make it efficient, even though it is regressive."},
+];
+
+const TF = [
+ {q:"Money neutrality means changes in the money supply have no effect on real variables in the long run.",a:true},
+ {q:"The money supply (Ms) curve slopes upward because higher interest rates attract more saving.",a:false,e:"Ms is vertical — set by the RBNZ."},
+ {q:"A rise in the OCR is shown as the Ms curve shifting left.",a:true},
+ {q:"Notes and coins make up about 2% of NZ's broad money supply.",a:true},
+ {q:"The short-run Phillips curve shows a positive relationship between inflation and unemployment.",a:false,e:"It is negative (downward sloping)."},
+ {q:"The long-run Phillips curve is vertical at the natural rate of unemployment.",a:true},
+ {q:"A positive output gap occurs when the economy is producing below potential.",a:false,e:"A positive gap means output is ABOVE potential."},
+ {q:"The Public Finance Act requires the government to run a surplus every single year.",a:false,e:"It requires a balanced budget on average over the cycle."},
+ {q:"New Zealand currently has a fixed exchange rate as part of its monetary framework.",a:false,e:"NZ has a floating exchange rate."},
+ {q:"The Gini coefficient equals 1 when income is perfectly equally distributed.",a:false,e:"Gini = 0 is perfect equality; 1 is perfect inequality."},
+ {q:"GST is regressive because lower-income households spend a larger share of income on it.",a:true},
+ {q:"Deflation increases the real burden of debt because nominal debt is fixed while prices fall.",a:true},
+ {q:"Leverage magnifies both gains and losses on an investment.",a:true},
+ {q:"The RBNZ was established in 1934.",a:true},
+ {q:"Fiat money is backed by gold held in reserve by the central bank.",a:false,e:"Fiat money has value by government decree only."},
+ {q:"The money multiplier equals 1 divided by the reserve ratio.",a:true},
+ {q:"An insolvent bank is one that simply cannot access cash quickly enough.",a:false,e:"That describes an ILLIQUID bank; insolvent = liabilities exceed assets."},
+ {q:"The RBNZ's mandate has remained unchanged since 1990.",a:false,e:"It changed in 2019, 2021, and 2023."},
+ {q:"In the Solow model the production function is concave due to diminishing returns to capital.",a:true},
+ {q:"Convergence means rich countries grow faster than poor countries.",a:false,e:"Convergence means POOR countries tend to grow faster."},
+ {q:"The Quantity Theory of Money is written MV = PY.",a:true},
+ {q:"The Long-Run Aggregate Supply curve is horizontal.",a:false,e:"LAS is vertical at potential output Yf."},
+ {q:"Securitisation means packaging loans into tradeable securities sold to investors.",a:true},
+ {q:"A negative output gap self-corrects faster than a positive one.",a:false,e:"Positive gaps close faster because wages are sticky downward."},
+];
+
+const WORDMATCH = [
+ ["Fiat money","Money with value by government decree, not backed by a commodity"],
+ ["Velocity of circulation","How many times each dollar is used to generate nominal GDP in a period"],
+ ["Money multiplier","1 ÷ reserve ratio — maximum money-supply expansion from a deposit"],
+ ["Fiscal drag","Inflation pushes taxpayers into higher brackets without real income gains"],
+ ["EMTR","Share of an extra dollar lost to tax AND benefit abatement"],
+ ["Gini coefficient","Area A ÷ (Area A + Area B) on a Lorenz curve"],
+ ["Output gap","The difference between actual output (Y) and potential output (Yf)"],
+ ["Neutral interest rate","The OCR consistent with inflation at target and economy at potential"],
+ ["Securitisation","Packaging loans into tradeable securities sold to investors"],
+ ["LSAP","Large-Scale Asset Purchases — unconventional monetary policy"],
+ ["Lorenz curve","Cumulative % of income vs cumulative % of population, poorest to richest"],
+ ["Absolute poverty","Based on subsistence — the minimum needed to sustain life"],
+ ["Relative poverty","Being below a threshold relative to others in society"],
+ ["LAS","Vertical supply curve at potential output, set by real factors"],
+ ["SAS","Upward-sloping supply where fixed nominal wages make higher P profitable"],
+ ["Phillips curve","Shows the relationship between inflation and unemployment"],
+ ["Convergence","Poor countries growing faster than rich ones"],
+ ["Policy Trilemma","Choose 2 of: fixed FX, free capital mobility, independent monetary policy"],
+ ["Automatic stabilisers","Tax and welfare changes that occur without new policy decisions"],
+ ["Bank run","When depositors withdraw simultaneously, overwhelming a bank"],
+];
+
+const TRIVIA_CATS = {
+ "Money & Banking":[
+   {q:"What does the OCR stand for?",o:["Official Cash Rate","Open Credit Ratio","Overnight Cost Rate","Official Capital Reserve"],c:0,pts:10},
+   {q:"The money multiplier equals:",o:["1 ÷ reserve ratio","Reserve ratio × deposits","Velocity × M","Deposits ÷ velocity"],c:0,pts:20},
+   {q:"An illiquid but solvent bank:",o:["Lacks cash now but assets > liabilities","Has liabilities > assets","Is bankrupt","Holds too much gold"],c:0,pts:30},
+ ],
+ "Inflation":[
+   {q:"The Quantity Theory equation is:",o:["MV = PY","M + V = P + Y","M/V = P/Y","MY = PV"],c:0,pts:10},
+   {q:"The long-run Phillips curve is:",o:["Vertical at the natural rate","Downward sloping","Horizontal","Upward sloping"],c:0,pts:20},
+   {q:"The worst hyperinflation ever was in:",o:["Hungary 1946","Germany 1923","Zimbabwe 2008","Venezuela 2021"],c:0,pts:30},
+ ],
+ "AD / AS":[
+   {q:"The LAS curve is:",o:["Vertical at Yf","Upward sloping","Downward sloping","Horizontal"],c:0,pts:10},
+   {q:"A positive output gap means:",o:["Y > Yf","Y < Yf","Y = Yf","Inflation below target"],c:0,pts:20},
+   {q:"SAS slopes upward because:",o:["Nominal wages are fixed short-run","Wages are flexible","Imports get cheaper","Government spends more"],c:0,pts:30},
+ ],
+ "Growth & Trade":[
+   {q:"The Solow production function is concave due to:",o:["Diminishing returns to capital","Increasing returns","Constant returns","Falling population"],c:0,pts:10},
+   {q:"Convergence means:",o:["Poor countries grow faster","Rich countries grow faster","Equal growth","No growth"],c:0,pts:20},
+   {q:"North vs South Korea shows the importance of:",o:["Institutions","Resources","Population","Climate"],c:0,pts:30},
+ ],
+ "Inequality & Poverty":[
+   {q:"Gini = 0 means:",o:["Perfect equality","Perfect inequality","Median = mean","No data"],c:0,pts:10},
+   {q:"Fiscal drag is:",o:["Inflation pushing wages into higher brackets","Recession spending","Tax cuts for the rich","Slow growth from taxes"],c:0,pts:20},
+   {q:"Absolute poverty is based on:",o:["Subsistence minimum","60% of median","Material hardship index","Relative disadvantage"],c:0,pts:30},
+ ],
+ "Crises":[
+   {q:"Germany's 1932 unemployment was about:",o:["43.5%","12%","28%","36%"],c:0,pts:10},
+   {q:"Securitisation means:",o:["Bundling loans into tradeable securities","Insuring deposits","Holding more capital","Bond buying"],c:0,pts:20},
+   {q:"Deflation worsens debt because:",o:["Fixed nominal debt rises in real terms","Interest rates fall","Banks forgive loans","Wages fall faster"],c:0,pts:30},
+ ],
+};
+
+const EXAM = [
+ {type:"mcq",q:"In the long run, an increase in the money supply primarily affects:",o:["The price level","Real output","Unemployment","Technology"],c:0},
+ {type:"mcq",q:"A rise in the OCR is represented as:",o:["Ms shifting left","Ms shifting right","Money demand rising","A move along Ms"],c:0},
+ {type:"mcq",q:"The long-run Phillips curve is:",o:["Vertical at the natural rate","Downward sloping","Horizontal","Upward sloping"],c:0},
+ {type:"mcq",q:"A positive output gap means:",o:["Y > Yf","Y < Yf","Y = Yf","Inflation below target"],c:0},
+ {type:"mcq",q:"The Gini coefficient of 0 represents:",o:["Perfect equality","Perfect inequality","Median income","Absolute poverty"],c:0},
+ {type:"mcq",q:"Notes and coins are about what share of broad money?",o:["2%","25%","50%","10%"],c:0},
+ {type:"mcq",q:"NZ's position in the Policy Trilemma is:",o:["Free capital + independent monetary policy","Fixed FX + free capital","Fixed FX + independent policy","All three"],c:0},
+ {type:"mcq",q:"Subprime mortgages featured all EXCEPT:",o:["Large deposits","Low income","High payment-to-income","Small deposits"],c:0},
+ {type:"mcq",q:"The SAS curve slopes upward because:",o:["Nominal wages are fixed short-run","Wages are flexible","Government spends more","Imports get cheaper"],c:0},
+ {type:"mcq",q:"Leverage:",o:["Magnifies gains and losses","Only magnifies gains","Removes risk","Only magnifies losses"],c:0},
+ {type:"mcq",q:"Convergence in growth theory means:",o:["Poor countries grow faster","Rich grow faster","Equal growth","No growth"],c:0},
+ {type:"mcq",q:"GST is regressive because:",o:["The poor spend a larger income share on it","The rich pay a higher rate","Food is taxed","It's a luxury tax"],c:0},
+ {type:"mcq",q:"The neutral interest rate is consistent with:",o:["Inflation at target & economy at potential","Zero nominal rate","The average lending rate","The global benchmark"],c:0},
+ {type:"written",q:"Explain why deflation was so damaging during the Great Depression. Use the real debt burden and real wages mechanisms.",model:"Deflation means falling prices. (1) Nominal debt is fixed, so when prices and incomes fall the REAL value of debt rises — borrowers struggle to repay, defaults rise, banks fail. (2) Nominal wages are sticky downward, so falling prices RAISE real wages, making labour more expensive, so firms cut employment. Both mechanisms deepen the downturn (debt-deflation spiral), seen in figures like Germany's 43.5% unemployment in 1932."},
+ {type:"written",q:"Explain the effect of an increase in government spending using the AD/AS model.",model:"Higher government spending shifts AD to the right. In the short run this raises both output (creating a positive output gap, Y > Yf) and the price level along the upward-sloping SAS. Over time, with output above potential, nominal wages rise, shifting SAS left until the economy returns to potential output Yf — leaving a permanently higher price level but unchanged long-run output (consistent with a vertical LAS)."},
+ {type:"written",q:"Explain the Policy Trilemma and why NZ cannot have a fixed exchange rate.",model:"The Policy Trilemma (Impossible Trinity) says a country can have at most two of: a fixed exchange rate, free capital mobility, and an independent monetary policy. NZ chooses free capital mobility and an independent monetary policy (so the RBNZ can set the OCR for domestic goals). Because it has chosen those two, it must let the exchange rate float — it cannot also fix the exchange rate without giving up either capital mobility or monetary independence."},
+ {type:"written",q:"Calculate the EMTR for a worker whose income rises from $70,000 to $75,000, with Working for Families payments falling from $11,024 to $9,828, and a 30% marginal tax rate.",model:"Extra income = $5,000. Tax on it = 30% × $5,000 = $1,500. WFF abatement = $11,024 − $9,828 = $1,196 lost. Total lost = $1,500 + $1,196 = $2,696. EMTR = $2,696 ÷ $5,000 = 53.9%. So nearly 54 cents of each extra dollar is lost to tax and benefit abatement."},
+ {type:"written",q:"List and briefly explain three reasons NZ's post-COVID inflation 'got away'.",model:"(1) Massive monetary stimulus — OCR cut to 0.25% plus LSAP injected money (MV up). (2) Large fiscal stimulus boosting aggregate demand. (3) Global supply-chain disruptions and high shipping/energy costs (supply shocks). A fourth factor: rising/de-anchored inflation expectations becoming self-fulfilling."},
+ {type:"written",q:"Explain why free trade often faces political resistance despite raising aggregate income.",model:"'Concentrated benefits, dispersed costs': the gains from trade (cheaper goods) are spread thinly across millions of consumers who each gain a little and don't organise, while the losses fall heavily on specific protected industries/workers who lobby hard. Politically the motivated losers outweigh the diffuse winners, so protection persists even though openness raises total income (e.g. ~$17,521 vs ~$2,362 GDP per capita for always-open vs always-closed economies)."},
+ {type:"written",q:"Distinguish between an illiquid and an insolvent bank, and explain why the distinction matters in a crisis.",model:"An illiquid bank cannot meet immediate cash demands even though its assets exceed its liabilities (a timing problem) — it can be saved by a lender-of-last-resort providing temporary cash. An insolvent bank has liabilities exceeding assets (a fundamental problem) — lending it cash won't fix it; it needs recapitalisation or resolution. In a crisis (e.g. the GFC), the difficulty is telling the two apart, especially when no one knows who holds toxic assets, which freezes interbank lending."},
+];
+
+/* ============ NAV / PARTICLES ============ */
+function show(id,screen){
+  document.querySelectorAll('#'+screen+' > div[id]').forEach(d=>{if(d.id.match(/(setup|play|result|game)$/))d.style.display='none'});
+  const el=document.getElementById(id); el.style.display='flex';
+}
+function openScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function goHome(){openScreen('home');clearAllTimers()}
+function clearAllTimers(){[quizTimer,examTimer,speedTimer,blitzTimer,wmTimer].forEach(t=>{if(t)clearInterval(t)})}
+let quizTimer,examTimer,speedTimer,blitzTimer,wmTimer;
+
+const MODES=[
+ {id:'flashcards',icon:'🎴',name:'Flashcards',desc:'60+ cards across Weeks 7–12. Flip, shuffle, track what you know.',badge:'easy',fn:initFlashcards},
+ {id:'quiz',icon:'📝',name:'MCQ Quiz',desc:'10-question quizzes by topic, with explanations & review.',badge:'medium',fn:initQuiz},
+ {id:'connect4',icon:'🔴',name:'Connect Four',desc:'Answer to drop a piece. 2-player or vs computer.',badge:'multi',fn:initC4},
+ {id:'exam',icon:'🎓',name:'Practice Exam',desc:'20 questions, 45-min timer, MCQ + written self-marking.',badge:'hard',fn:initExam},
+ {id:'speed',icon:'⚡',name:'Speed Round',desc:'60 seconds, max questions, high-score leaderboard.',badge:'medium',fn:initSpeed},
+ {id:'wordmatch',icon:'🔗',name:'Word Match',desc:'Match terms to definitions against the clock.',badge:'easy',fn:initWordMatch},
+ {id:'blitz',icon:'🔥',name:'True/False Blitz',desc:'5 seconds each. Build the longest streak!',badge:'medium',fn:initBlitz},
+ {id:'trivia',icon:'🧠',name:'Economics Trivia',desc:'2-player category battle. Harder Qs worth more points.',badge:'multi',fn:initTrivia},
+];
+function buildHome(){
+  const g=document.getElementById('modes-grid');
+  g.innerHTML=MODES.map(m=>`<div class="mode-card" onclick="(${'go_'+m.id})()"><span class="badge badge-${m.badge}">${m.badge}</span><div class="icon">${m.icon}</div><div class="name">${m.name}</div><div class="desc">${m.desc}</div></div>`).join('');
+  document.getElementById('stat-cards').textContent=FLASHCARDS.length;
+  document.getElementById('stat-mcq').textContent=MCQ.length;
+  document.getElementById('stat-tf').textContent=TF.length;
+  document.getElementById('stat-best').textContent=localStorage.getItem('econ-bestStreak')||0;
+}
+MODES.forEach(m=>{window['go_'+m.id]=()=>{openScreen(m.id);m.fn()}});
+
+// Particles
+const cv=document.getElementById('particles'),ctx=cv.getContext('2d');
+let parts=[];
+function resize(){cv.width=innerWidth;cv.height=innerHeight}
+resize();addEventListener('resize',resize);
+for(let i=0;i<55;i++)parts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+1});
+function animate(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle='rgba(0,200,150,0.5)';ctx.fill()});
+  for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+    const dx=parts[i].x-parts[j].x,dy=parts[i].y-parts[j].y,d=Math.hypot(dx,dy);
+    if(d<120){ctx.beginPath();ctx.moveTo(parts[i].x,parts[i].y);ctx.lineTo(parts[j].x,parts[j].y);ctx.strokeStyle=`rgba(0,200,150,${0.12*(1-d/120)})`;ctx.stroke()}}
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ============ FLASHCARDS ============ */
+let fcList=[],fcIdx=0,fcWeek='all',fcKnown={};
+function initFlashcards(){
+  const weeks=['all',7,8,9,10,11,12];
+  document.getElementById('fc-filters').innerHTML=weeks.map(w=>`<button class="filter-btn ${w==fcWeek?'active':''}" onclick="setFcWeek('${w}')">${w=='all'?'All':'Week '+w}</button>`).join('');
+  fcKnown=JSON.parse(localStorage.getItem('econ-fcKnown')||'{}');
+  filterFc();
+}
+function setFcWeek(w){fcWeek=w;initFlashcards()}
+function filterFc(){
+  fcList=FLASHCARDS.map((c,i)=>({...c,idx:i})).filter(c=>fcWeek=='all'||c.w==fcWeek);
+  fcIdx=0;renderFc();
+}
+function renderFc(){
+  if(!fcList.length)return;
+  const c=fcList[fcIdx];
+  document.getElementById('fc-card').classList.remove('flipped');
+  document.getElementById('fc-tag').textContent='Week '+c.w;
+  document.getElementById('fc-q').textContent=c.q;
+  document.getElementById('fc-a').textContent=c.a;
+  document.getElementById('fc-pfill').style.width=((fcIdx+1)/fcList.length*100)+'%';
+  document.getElementById('fc-ptext').textContent=(fcIdx+1)+' / '+fcList.length;
+  const known=Object.keys(fcKnown).filter(k=>fcKnown[k]).length;
+  document.getElementById('fc-known').textContent='Known: '+known;
+}
+function flipCard(){document.getElementById('fc-card').classList.toggle('flipped')}
+function nextCard(){fcIdx=(fcIdx+1)%fcList.length;renderFc()}
+function prevCard(){fcIdx=(fcIdx-1+fcList.length)%fcList.length;renderFc()}
+function markCard(known){fcKnown[fcList[fcIdx].idx]=known;localStorage.setItem('econ-fcKnown',JSON.stringify(fcKnown));nextCard()}
+function shuffleCards(){for(let i=fcList.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcList[i],fcList[j]]=[fcList[j],fcList[i]]}fcIdx=0;renderFc()}
+
+/* ============ QUIZ ============ */
+let quizQs=[],quizIdx=0,quizScore=0,quizFilter='all',quizWrong=[];
+function initQuiz(){
+  const weeks=['all',7,8,9,10,11,12];
+  document.getElementById('quiz-filters').innerHTML=weeks.map(w=>`<button class="filter-btn ${w==quizFilter?'active':''}" onclick="setQuizFilter('${w}')">${w=='all'?'All':'Week '+w}</button>`).join('');
+  show('quiz-setup','quiz');
+}
+function setQuizFilter(w){quizFilter=w;initQuiz()}
+function startQuiz(){
+  let pool=MCQ.filter(q=>quizFilter=='all'||q.w==quizFilter);
+  pool=[...pool].sort(()=>Math.random()-.5).slice(0,10);
+  quizQs=pool;quizIdx=0;quizScore=0;quizWrong=[];
+  show('quiz-play','quiz');document.getElementById('quiz-play').style.display='flex';
+  renderQuizQ();
+}
+function renderQuizQ(){
+  const q=quizQs[quizIdx];
+  document.getElementById('quiz-qnum').textContent=`Question ${quizIdx+1} of ${quizQs.length} · Week ${q.w}`;
+  document.getElementById('quiz-qtext').textContent=q.q;
+  const opts=document.getElementById('quiz-opts');
+  opts.innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="answerQuiz(${i})">${o}</button>`).join('');
+  document.getElementById('quiz-explain').classList.remove('show');
+  document.getElementById('quiz-next').style.display='none';
+  document.getElementById('quiz-score').textContent='Score: '+quizScore;
+}
+function answerQuiz(i){
+  const q=quizQs[quizIdx],opts=document.querySelectorAll('#quiz-opts .opt');
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
+  if(i==q.c)quizScore++;else quizWrong.push({...q,chose:i});
+  const ex=document.getElementById('quiz-explain');ex.textContent='💡 '+q.e;ex.classList.add('show');
+  document.getElementById('quiz-score').textContent='Score: '+quizScore;
+  document.getElementById('quiz-next').style.display='inline-block';
+  document.getElementById('quiz-next').textContent=quizIdx<quizQs.length-1?'Next →':'See Results';
+}
+function nextQuizQ(){
+  if(quizIdx<quizQs.length-1){quizIdx++;renderQuizQ()}
+  else endQuiz();
+}
+function endQuiz(){
+  show('quiz-result','quiz');document.getElementById('quiz-result').style.display='block';
+  const pct=Math.round(quizScore/quizQs.length*100);
+  document.getElementById('quiz-final').textContent=quizScore+'/'+quizQs.length+' ('+pct+'%)';
+  document.getElementById('quiz-msg').textContent=pct>=80?'Excellent work! 🎉':pct>=50?'Solid — review the misses below.':'Keep studying — review below.';
+  const rev=document.getElementById('quiz-review');
+  rev.innerHTML=quizWrong.length?'<h3>Review:</h3>'+quizWrong.map(q=>`<div class="model-answer"><b>Q:</b> ${q.q}<br><b>✓ Correct:</b> ${q.o[q.c]}<br><span class="muted">${q.e}</span></div>`).join(''):'<p class="muted">Perfect score — nothing to review! 🏆</p>';
+}
+
+/* ============ CONNECT 4 ============ */
+let c4board=[],c4turn=1,c4ai=false,c4names=['',''],c4over=false,c4pending=null;
+function initC4(){show('c4-setup','connect4')}
+function startC4(ai){
+  c4ai=ai;
+  c4names=[document.getElementById('c4-p1').value||'Player 1', ai?'Computer 🤖':(document.getElementById('c4-p2').value||'Player 2')];
+  show('c4-game','connect4');document.getElementById('c4-game').style.display='flex';
+  startC4Reset();
+}
+function startC4Reset(){
+  c4board=Array.from({length:6},()=>Array(7).fill(0));
+  c4turn=1;c4over=false;renderC4();updateC4Turn();
+}
+function renderC4(){
+  const b=document.getElementById('c4-board');
+  b.innerHTML='';
+  for(let r=0;r<6;r++)for(let c=0;c<7;c++){
+    const cell=document.createElement('div');
+    cell.className='c4-cell'+(c4board[r][c]?(' p'+c4board[r][c]):'');
+    cell.onclick=()=>c4Click(c);
+    b.appendChild(cell);
+  }
+}
+function updateC4Turn(){
+  const pill=document.getElementById('c4-turn');
+  pill.textContent=c4names[c4turn-1]+"'s turn ("+(c4turn==1?'🟡':'🔴')+')';
+  pill.style.background=c4turn==1?'rgba(245,176,65,.25)':'rgba(239,68,68,.25)';
+}
+function c4Click(col){
+  if(c4over||c4pending)return;
+  if(c4ai&&c4turn==2)return;
+  if(c4board[0][col])return; // column full
+  // ask a question first
+  askC4Question(col,c4turn);
+}
+function askC4Question(col,player){
+  const q=MCQ[Math.floor(Math.random()*MCQ.length)];
+  c4pending={col,player,q};
+  document.getElementById('c4-mq').textContent='('+c4names[player-1]+') '+q.q;
+  document.getElementById('c4-mopts').innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="answerC4(${i})">${o}</button>`).join('');
+  document.getElementById('c4-modal').classList.add('show');
+}
+function answerC4(i){
+  const {col,player,q}=c4pending;
+  const opts=document.querySelectorAll('#c4-mopts .opt');
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
+  const correct=i==q.c;
+  setTimeout(()=>{
+    document.getElementById('c4-modal').classList.remove('show');
+    c4pending=null;
+    if(correct){dropC4(col,player)}
+    else{
+      // turn passes to opponent
+      c4turn=player==1?2:1;updateC4Turn();
+      if(c4ai&&c4turn==2)setTimeout(aiC4Move,700);
+    }
+  },900);
+}
+function dropC4(col,player){
+  let placed=-1;
+  for(let r=5;r>=0;r--){if(!c4board[r][col]){c4board[r][col]=player;placed=r;break}}
+  renderC4();
+  if(placed<0)return;
+  const win=checkC4(placed,col,player);
+  if(win){c4over=true;highlightWin(win);
+    document.getElementById('c4-turn').textContent='🏆 '+c4names[player-1]+' wins!';
+    document.getElementById('c4-turn').style.background='rgba(0,200,150,.3)';return}
+  if(c4board[0].every(x=>x)){c4over=true;document.getElementById('c4-turn').textContent="It's a draw!";return}
+  c4turn=player==1?2:1;updateC4Turn();
+  if(c4ai&&c4turn==2&&!c4over)setTimeout(aiC4Move,700);
+}
+function aiC4Move(){
+  if(c4over)return;
+  // pick a non-full column, prefer winning/blocking
+  const valid=[];for(let c=0;c<7;c++)if(!c4board[0][c])valid.push(c);
+  let choice=valid[Math.floor(Math.random()*valid.length)];
+  for(const c of valid){if(c4Simulate(c,2)){choice=c;break}}
+  for(const c of valid){if(c4Simulate(c,1)){choice=c;break}}
+  // computer answers (assume correct) then drops
+  dropC4(choice,2);
+}
+function c4Simulate(col,player){
+  let r=-1;for(let i=5;i>=0;i--){if(!c4board[i][col]){r=i;break}}
+  if(r<0)return false;
+  c4board[r][col]=player;const w=checkC4(r,col,player);c4board[r][col]=0;return !!w;
+}
+function checkC4(r,c,p){
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(const [dr,dc] of dirs){
+    let line=[[r,c]];
+    for(let s=1;s<4;s++){const nr=r+dr*s,nc=c+dc*s;if(nr<0||nr>5||nc<0||nc>6||c4board[nr][nc]!=p)break;line.push([nr,nc])}
+    for(let s=1;s<4;s++){const nr=r-dr*s,nc=c-dc*s;if(nr<0||nr>5||nc<0||nc>6||c4board[nr][nc]!=p)break;line.push([nr,nc])}
+    if(line.length>=4)return line;
+  }
+  return null;
+}
+function highlightWin(line){
+  const cells=document.querySelectorAll('.c4-cell');
+  line.forEach(([r,c])=>cells[r*7+c].classList.add('win'));
+}
+
+/* ============ PRACTICE EXAM ============ */
+let examIdx=0,examAns={},examTime=45*60;
+function initExam(){show('exam-setup','exam');document.getElementById('exam-timer').textContent='45:00'}
+function startExam(){
+  examIdx=0;examAns={};examTime=45*60;
+  show('exam-play','exam');document.getElementById('exam-play').style.display='flex';
+  renderExamNav();renderExamQ();
+  if(examTimer)clearInterval(examTimer);
+  examTimer=setInterval(()=>{examTime--;const m=Math.floor(examTime/60),s=examTime%60;
+    document.getElementById('exam-timer').textContent=m+':'+String(s).padStart(2,'0');
+    if(examTime<=0){clearInterval(examTimer);submitExam()}},1000);
+}
+function renderExamNav(){
+  document.getElementById('exam-nav').innerHTML=EXAM.map((q,i)=>`<div class="exam-dot ${examAns[i]!=null?'answered':''} ${i==examIdx?'current':''}" onclick="examGo(${i})">${i+1}</div>`).join('');
+}
+function examGo(i){examIdx=i;renderExamQ();renderExamNav()}
+function examNav(d){examIdx=Math.max(0,Math.min(EXAM.length-1,examIdx+d));renderExamQ();renderExamNav()}
+function renderExamQ(){
+  const q=EXAM[examIdx];
+  document.getElementById('exam-qnum').textContent=`Question ${examIdx+1} of ${EXAM.length} · ${q.type=='mcq'?'Multiple Choice':'Written'}`;
+  document.getElementById('exam-qtext').textContent=q.q;
+  const body=document.getElementById('exam-body');
+  if(q.type=='mcq'){
+    body.innerHTML=q.o.map((o,i)=>`<button class="opt ${examAns[examIdx]==i?'correct':''}" onclick="examPick(${i})">${o}</button>`).join('');
+  }else{
+    body.innerHTML=`<textarea class="written-answer" oninput="examWrite(this.value)" placeholder="Type your answer...">${examAns[examIdx]||''}</textarea>`;
+  }
+}
+function examPick(i){examAns[examIdx]=i;renderExamQ();renderExamNav()}
+function examWrite(v){examAns[examIdx]=v;renderExamNav()}
+function submitExam(){
+  if(examTimer)clearInterval(examTimer);
+  let mcqTotal=0,mcqCorrect=0;
+  EXAM.forEach((q,i)=>{if(q.type=='mcq'){mcqTotal++;if(examAns[i]==q.c)mcqCorrect++}});
+  show('exam-result','exam');document.getElementById('exam-result').style.display='block';
+  document.getElementById('exam-final').textContent='MCQ: '+mcqCorrect+'/'+mcqTotal+' ('+Math.round(mcqCorrect/mcqTotal*100)+'%)';
+  document.getElementById('exam-review').innerHTML=EXAM.map((q,i)=>{
+    if(q.type=='mcq'){
+      const ok=examAns[i]==q.c;
+      return `<div class="model-answer"><b>Q${i+1}:</b> ${q.q}<br><b>${ok?'✓':'✗'} Your answer:</b> ${examAns[i]!=null?q.o[examAns[i]]:'(blank)'}<br><b>Correct:</b> ${q.o[q.c]}</div>`;
+    }else{
+      return `<div class="model-answer"><b>Q${i+1}:</b> ${q.q}<br><b>Your answer:</b><br>${(examAns[i]||'(blank)').replace(/\n/g,'<br>')}<br><br><b>📘 Model answer:</b><br>${q.model}</div>`;
+    }
+  }).join('');
+}
+
+/* ============ SPEED ROUND ============ */
+let speedCorrect=0,speedWrong=0,speedTime=60,speedQ=null;
+function initSpeed(){show('speed-setup','speed');renderSpeedLB('speed-lb')}
+function renderSpeedLB(id){
+  const lb=JSON.parse(localStorage.getItem('econ-speedLB')||'[]').sort((a,b)=>b.s-a.s).slice(0,5);
+  document.getElementById(id).innerHTML=lb.length?lb.map((e,i)=>`<div class="lb-row"><span><span class="rank">#${i+1}</span> ${e.n}</span><span>${e.s}</span></div>`).join(''):'<p class="muted">No scores yet — be the first!</p>';
+}
+function startSpeed(){
+  speedCorrect=0;speedWrong=0;speedTime=60;
+  show('speed-play','speed');document.getElementById('speed-play').style.display='flex';
+  nextSpeedQ();
+  if(speedTimer)clearInterval(speedTimer);
+  speedTimer=setInterval(()=>{speedTime--;document.getElementById('speed-timer').textContent=speedTime;if(speedTime<=0)endSpeed()},1000);
+}
+function nextSpeedQ(){
+  speedQ=MCQ[Math.floor(Math.random()*MCQ.length)];
+  document.getElementById('speed-q').textContent=speedQ.q;
+  document.getElementById('speed-opts').innerHTML=speedQ.o.map((o,i)=>`<button class="opt" onclick="answerSpeed(${i})">${o}</button>`).join('');
+  document.getElementById('speed-correct').textContent='✓ '+speedCorrect;
+  document.getElementById('speed-wrong').textContent='✗ '+speedWrong;
+}
+function answerSpeed(i){
+  if(i==speedQ.c)speedCorrect++;else speedWrong++;
+  nextSpeedQ();
+}
+function endSpeed(){
+  clearInterval(speedTimer);
+  const name=document.getElementById('speed-name').value||'Player';
+  const lb=JSON.parse(localStorage.getItem('econ-speedLB')||'[]');
+  lb.push({n:name,s:speedCorrect});localStorage.setItem('econ-speedLB',JSON.stringify(lb));
+  show('speed-result','speed');document.getElementById('speed-result').style.display='block';
+  document.getElementById('speed-final').textContent=speedCorrect+' correct';
+  document.getElementById('speed-msg').textContent=speedCorrect>=15?'Lightning fast! ⚡':speedCorrect>=8?'Nice pace!':'Keep practising!';
+  renderSpeedLB('speed-lb2');
+}
+
+/* ============ WORD MATCH ============ */
+let wmPairs=[],wmSelTerm=null,wmMatched=0,wmTime=0;
+function initWordMatch(){show('wm-setup','wordmatch')}
+function startWordMatch(){
+  wmPairs=[...WORDMATCH].sort(()=>Math.random()-.5).slice(0,10);
+  wmSelTerm=null;wmMatched=0;wmTime=0;
+  show('wm-play','wordmatch');document.getElementById('wm-play').style.display='flex';
+  const terms=wmPairs.map((p,i)=>({t:p[0],i})).sort(()=>Math.random()-.5);
+  const defs=wmPairs.map((p,i)=>({d:p[1],i})).sort(()=>Math.random()-.5);
+  document.getElementById('wm-terms').innerHTML=terms.map(t=>`<div class="match-item" data-i="${t.i}" onclick="wmSelect(${t.i},this)">${t.t}</div>`).join('');
+  document.getElementById('wm-defs').innerHTML=defs.map(d=>`<div class="match-item" data-i="${d.i}" onclick="wmDef(${d.i},this)">${d.d}</div>`).join('');
+  document.getElementById('wm-score').textContent='0 / '+wmPairs.length;
+  if(wmTimer)clearInterval(wmTimer);
+  wmTimer=setInterval(()=>wmTime++,1000);
+}
+function wmSelect(i,el){
+  if(el.classList.contains('matched'))return;
+  document.querySelectorAll('#wm-terms .match-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');wmSelTerm={i,el};
+}
+function wmDef(i,el){
+  if(!wmSelTerm||el.classList.contains('matched'))return;
+  if(i==wmSelTerm.i){
+    el.classList.add('matched');wmSelTerm.el.classList.add('matched');wmSelTerm.el.classList.remove('selected');
+    wmSelTerm=null;wmMatched++;
+    document.getElementById('wm-score').textContent=wmMatched+' / '+wmPairs.length;
+    if(wmMatched==wmPairs.length)endWordMatch();
+  }else{
+    el.classList.add('wrong');setTimeout(()=>el.classList.remove('wrong'),350);
+  }
+}
+function endWordMatch(){
+  clearInterval(wmTimer);
+  show('wm-result','wordmatch');document.getElementById('wm-result').style.display='block';
+  document.getElementById('wm-final').textContent=wmPairs.length+' / '+wmPairs.length;
+  document.getElementById('wm-time').textContent='Time: '+wmTime+'s';
+}
+
+/* ============ TRUE/FALSE BLITZ ============ */
+let blitzQ=null,blitzStreak=0,blitzCount=5;
+function initBlitz(){show('blitz-setup','blitz');document.getElementById('blitz-best').textContent='Best: '+(localStorage.getItem('econ-bestStreak')||0)}
+function startBlitz(){
+  blitzStreak=0;
+  show('blitz-play','blitz');document.getElementById('blitz-play').style.display='flex';
+  nextBlitz();
+}
+function nextBlitz(){
+  blitzQ=TF[Math.floor(Math.random()*TF.length)];
+  document.getElementById('blitz-q').textContent=blitzQ.q;
+  document.getElementById('blitz-streak').textContent='🔥 Streak: '+blitzStreak;
+  document.getElementById('blitz-fb').textContent='';
+  blitzCount=5;document.getElementById('blitz-timer').textContent=blitzCount;
+  if(blitzTimer)clearInterval(blitzTimer);
+  blitzTimer=setInterval(()=>{blitzCount--;document.getElementById('blitz-timer').textContent=blitzCount;if(blitzCount<=0)answerBlitz(null)},1000);
+}
+function answerBlitz(ans){
+  clearInterval(blitzTimer);
+  const correct=ans===blitzQ.a;
+  document.getElementById('blitz-fb').textContent=correct?'✓':'✗';
+  if(correct){blitzStreak++;setTimeout(nextBlitz,600)}
+  else endBlitz();
+}
+function endBlitz(){
+  clearInterval(blitzTimer);
+  const best=parseInt(localStorage.getItem('econ-bestStreak')||0);
+  if(blitzStreak>best){localStorage.setItem('econ-bestStreak',blitzStreak)}
+  show('blitz-result','blitz');document.getElementById('blitz-result').style.display='block';
+  document.getElementById('blitz-final').textContent='Streak: '+blitzStreak;
+  let msg=blitzStreak>best?'🏆 New best streak!':'Best: '+best;
+  if(blitzQ&&blitzQ.e)msg+=' · '+blitzQ.e;
+  document.getElementById('blitz-msg').textContent=msg;
+}
+
+/* ============ TRIVIA ============ */
+let trScores=[0,0],trNames=['',''],trTurn=0,trDone={},trPending=null;
+function initTrivia(){show('trivia-setup','trivia')}
+function startTrivia(){
+  trNames=[document.getElementById('trivia-p1').value||'Player 1',document.getElementById('trivia-p2').value||'Player 2'];
+  trScores=[0,0];trTurn=0;trDone={};
+  show('trivia-play','trivia');document.getElementById('trivia-play').style.display='flex';
+  renderTrivia();
+}
+function renderTrivia(){
+  document.getElementById('trivia-scores').innerHTML=trNames.map((n,i)=>`<div class="player-score ${i==trTurn?'active':''}"><div class="pname">${n}</div><div class="pval">${trScores[i]}</div></div>`).join('');
+  document.getElementById('trivia-turn').textContent=trNames[trTurn]+"'s turn — pick a category";
+  const cats=Object.keys(TRIVIA_CATS);
+  document.getElementById('trivia-cats').innerHTML=cats.map(c=>{
+    const used=trDone[c]||0,total=TRIVIA_CATS[c].length;
+    const done=used>=total;
+    return `<div class="cat-card ${done?'done':''}" onclick="trPick('${c}')"><div style="font-size:24px">📚</div><b>${c}</b><div class="muted">${used}/${total} done</div></div>`;
+  }).join('');
+  if(cats.every(c=>(trDone[c]||0)>=TRIVIA_CATS[c].length))endTrivia();
+}
+function trPick(cat){
+  const used=trDone[cat]||0;
+  if(used>=TRIVIA_CATS[cat].length)return;
+  const q=TRIVIA_CATS[cat][used];
+  trPending={cat,q};
+  document.getElementById('trivia-mtag').textContent=cat+' · '+q.pts+' points · '+trNames[trTurn];
+  document.getElementById('trivia-mq').textContent=q.q;
+  document.getElementById('trivia-mopts').innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="trAnswer(${i})">${o}</button>`).join('');
+  document.getElementById('trivia-modal').classList.add('show');
+}
+function trAnswer(i){
+  const {cat,q}=trPending;
+  const opts=document.querySelectorAll('#trivia-mopts .opt');
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
+  if(i==q.c)trScores[trTurn]+=q.pts;
+  trDone[cat]=(trDone[cat]||0)+1;
+  setTimeout(()=>{
+    document.getElementById('trivia-modal').classList.remove('show');
+    trTurn=trTurn==0?1:0;
+    renderTrivia();
+  },1100);
+}
+function endTrivia(){
+  show('trivia-result','trivia');document.getElementById('trivia-result').style.display='block';
+  let win;
+  if(trScores[0]>trScores[1])win='🏆 '+trNames[0]+' wins!';
+  else if(trScores[1]>trScores[0])win='🏆 '+trNames[1]+' wins!';
+  else win="🤝 It's a tie!";
+  document.getElementById('trivia-winner').textContent=win;
+  document.getElementById('trivia-final').innerHTML=`<div class="players-row">${trNames.map((n,i)=>`<div class="player-score"><div class="pname">${n}</div><div class="pval">${trScores[i]}</div></div>`).join('')}</div>`;
+}
+
+buildHome();
+</script>
+</body>
+</html>
