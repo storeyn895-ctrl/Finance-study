@@ -160,8 +160,13 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 .exam-dot{width:34px;height:34px;border-radius:8px;background:var(--surface2);color:var(--text2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .exam-dot.answered{background:var(--accent);color:#04201a}
 .exam-dot.current{outline:2px solid var(--accent2)}
-.written-answer{width:100%;min-height:120px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;resize:vertical}
-.model-answer{background:var(--surface);border-left:3px solid var(--accent3);padding:14px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.5;color:var(--text2)}
+.written-answer{width:100%;min-height:110px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;resize:vertical}
+.model-answer{background:var(--surface);border-left:3px solid var(--accent3);padding:14px;border-radius:8px;margin-top:10px;font-size:14px;line-height:1.5;color:var(--text2)}
+.opt.selected{border-color:var(--accent2)!important;background:rgba(155,89,182,.2)!important}
+.diagram-box{border:2px dashed var(--border);border-radius:10px;padding:14px;margin:8px 0;background:rgba(0,200,150,.04)}
+.diagram-hint{font-size:13px;color:var(--accent3);line-height:1.6}
+.exam-q-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.marks-badge{background:rgba(0,200,150,.15);color:var(--accent);font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -253,31 +258,88 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none}
 <!-- PRACTICE EXAM -->
 <section id="exam" class="screen">
   <button class="back-btn" onclick="goHome()">← Home</button>
-  <div class="screen-header"><div class="screen-title">🎓 Practice Exam</div>
-    <div class="score-chip" id="exam-timer">45:00</div></div>
-  <div id="exam-setup" class="center">
-    <p class="muted">20 questions · 45-minute timer · mix of multiple choice and written.<br>Written answers are self-marked against a model answer.</p>
-    <button class="btn mt" onclick="startExam()">Begin Exam →</button>
+
+  <!-- Setup screen -->
+  <div id="exam-setup" style="width:100%;max-width:720px;margin-top:60px">
+    <h2 style="font-size:26px;font-weight:900;margin-bottom:6px">🎓 ECON 105 Practice Final Exam</h2>
+    <p style="color:var(--text2);margin-bottom:20px">University of Canterbury · Department of Economics &amp; Finance</p>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px">
+      <h3 style="margin-bottom:14px;color:var(--accent)">Exam Instructions</h3>
+      <ul style="color:var(--text2);line-height:2;padding-left:20px;font-size:15px">
+        <li><b>Duration:</b> 3 hours</li>
+        <li><b>Open book:</b> Hard copy material permitted — no digital devices except a non-communication calculator</li>
+        <li><b>Section A:</b> 30 multiple choice questions (30 marks, 1 mark each)</li>
+        <li><b>Section B:</b> Written answer questions (70 marks)</li>
+        <li><b>Total:</b> 100 marks</li>
+        <li>Answer ALL questions in both sections</li>
+        <li>For Section A select ONE option (A, B, C or D) per question</li>
+        <li>Section B written answers are self-marked against model answers on submission</li>
+      </ul>
+    </div>
+    <button class="btn" style="width:100%;padding:16px;font-size:17px" onclick="startExam()">Begin Exam — 3 Hours →</button>
   </div>
+
+  <!-- Exam play area -->
   <div id="exam-play" style="display:none;width:100%;flex-direction:column;align-items:center">
-    <div class="exam-nav" id="exam-nav"></div>
-    <div class="quiz-box">
-      <div class="qnum" id="exam-qnum"></div>
-      <div class="qtext" id="exam-qtext"></div>
-      <div id="exam-body"></div>
+    <!-- Sticky header -->
+    <div style="position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);width:100%;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;gap:4px">
+        <button id="tab-a" class="btn small" onclick="examTab('a')" style="border-radius:8px 0 0 8px">Section A — MCQ</button>
+        <button id="tab-b" class="btn ghost small" onclick="examTab('b')" style="border-radius:0 8px 8px 0">Section B — Written</button>
+      </div>
+      <span style="color:var(--text2);font-size:13px" id="exam-a-count">A: 0/30</span>
+      <span style="color:var(--text2);font-size:13px" id="exam-b-count">B: 0/8</span>
+      <div style="flex:1"></div>
+      <div style="font-size:22px;font-weight:800;color:var(--accent3);font-variant-numeric:tabular-nums" id="exam-timer">3:00:00</div>
+      <button class="btn small" style="background:var(--danger);color:#fff" onclick="confirmSubmit()">Submit Exam</button>
     </div>
-    <div class="row mt">
-      <button class="btn ghost small" onclick="examNav(-1)">← Prev</button>
-      <button class="btn ghost small" onclick="examNav(1)">Next →</button>
-      <button class="btn small" onclick="submitExam()">Submit Exam</button>
+
+    <!-- Section A panel -->
+    <div id="exam-panel-a" style="width:100%;max-width:820px;padding:16px">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px">
+        <h3 style="font-size:17px;font-weight:800;margin-bottom:4px">SECTION A — MULTIPLE CHOICE <span style="color:var(--text2);font-weight:400;font-size:14px">(30 marks)</span></h3>
+        <p style="color:var(--text2);font-size:13px">For each question select the ONE best answer: A, B, C or D.</p>
+      </div>
+      <div id="exam-mcq-list"></div>
+    </div>
+
+    <!-- Section B panel -->
+    <div id="exam-panel-b" style="display:none;width:100%;max-width:820px;padding:16px">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px">
+        <h3 style="font-size:17px;font-weight:800;margin-bottom:4px">SECTION B — WRITTEN ANSWERS <span style="color:var(--text2);font-weight:400;font-size:14px">(70 marks)</span></h3>
+        <p style="color:var(--text2);font-size:13px">Answer ALL questions. Show your working where applicable.</p>
+      </div>
+      <!-- OCR News Release -->
+      <div style="background:#0d1f15;border:2px solid var(--accent);border-radius:14px;padding:20px;margin-bottom:22px;font-size:14px;line-height:1.7">
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-weight:900;font-size:16px;color:var(--accent);letter-spacing:1px">RESERVE BANK OF NEW ZEALAND — TE PŪTEA MATUA</div>
+          <div style="font-weight:800;font-size:15px;margin-top:4px">OFFICIAL CASH RATE SUMMARY AND RECORD</div>
+          <div style="color:var(--text2);font-size:13px;margin-top:2px">19 February 2025</div>
+        </div>
+        <p style="margin-bottom:10px">The Monetary Policy Committee today agreed to reduce the Official Cash Rate (OCR) by 50 basis points, from 4.25% to <b>3.75%</b>.</p>
+        <p style="margin-bottom:10px">Annual consumer price inflation returned to within the Monetary Policy Committee's 1 to 3 percent target band in the second half of 2024. Inflation expectations are settling near the 2 percent midpoint.</p>
+        <p style="margin-bottom:10px">The New Zealand economy is recovering from a period of below-potential growth. Productive capacity now exceeds spending and output. <b>There is spare productive capacity in the economy.</b></p>
+        <p style="margin-bottom:10px">Global economic growth is expected to remain subdued. If global trade barriers increase significantly, New Zealand's export growth and broader economic activity could be adversely affected.</p>
+        <p style="margin-bottom:10px">The Committee has scope to lower the OCR further as inflation remains near target. The pace of further easing will depend on the Committee's confidence that pricing behaviour remains consistent with low and stable inflation.</p>
+        <p style="color:var(--text2);font-size:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:10px"><i>Source: Reserve Bank of New Zealand, February 2025 OCR Review</i></p>
+      </div>
+      <!-- Written questions rendered here -->
+      <div id="exam-written-list"></div>
     </div>
   </div>
-  <div id="exam-result" style="display:none" class="result-box">
-    <h2>Exam Submitted!</h2>
-    <div class="result-score" id="exam-final"></div>
-    <p class="muted">Auto-scored multiple choice. Review written answers below against the model answers.</p>
-    <div id="exam-review" style="text-align:left;margin-top:18px"></div>
-    <div class="row mt"><button class="btn" onclick="startExam()">Retake</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+
+  <!-- Result screen -->
+  <div id="exam-result" style="display:none;width:100%;max-width:820px;margin-top:60px">
+    <h2 style="font-size:26px;font-weight:900;margin-bottom:6px">Exam Submitted</h2>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px">
+      <div style="font-size:36px;font-weight:900;color:var(--accent);margin-bottom:4px" id="exam-mcq-score"></div>
+      <p style="color:var(--text2);font-size:14px">Section A auto-scored. Review written answers against model answers below.</p>
+    </div>
+    <div id="exam-review"></div>
+    <div class="row mt" style="justify-content:center;gap:12px;padding-bottom:40px">
+      <button class="btn" onclick="startExam()">Retake Exam</button>
+      <button class="btn ghost" onclick="goHome()">← Home</button>
+    </div>
   </div>
 </section>
 
@@ -603,27 +665,116 @@ const TRIVIA_CATS = {
  ],
 };
 
-const EXAM = [
- {type:"mcq",q:"In the long run, an increase in the money supply primarily affects:",o:["The price level","Real output","Unemployment","Technology"],c:0},
- {type:"mcq",q:"A rise in the OCR is represented as:",o:["Ms shifting left","Ms shifting right","Money demand rising","A move along Ms"],c:0},
- {type:"mcq",q:"The long-run Phillips curve is:",o:["Vertical at the natural rate","Downward sloping","Horizontal","Upward sloping"],c:0},
- {type:"mcq",q:"A positive output gap means:",o:["Y > Yf","Y < Yf","Y = Yf","Inflation below target"],c:0},
- {type:"mcq",q:"The Gini coefficient of 0 represents:",o:["Perfect equality","Perfect inequality","Median income","Absolute poverty"],c:0},
- {type:"mcq",q:"Notes and coins are about what share of broad money?",o:["2%","25%","50%","10%"],c:0},
- {type:"mcq",q:"NZ's position in the Policy Trilemma is:",o:["Free capital + independent monetary policy","Fixed FX + free capital","Fixed FX + independent policy","All three"],c:0},
- {type:"mcq",q:"Subprime mortgages featured all EXCEPT:",o:["Large deposits","Low income","High payment-to-income","Small deposits"],c:0},
- {type:"mcq",q:"The SAS curve slopes upward because:",o:["Nominal wages are fixed short-run","Wages are flexible","Government spends more","Imports get cheaper"],c:0},
- {type:"mcq",q:"Leverage:",o:["Magnifies gains and losses","Only magnifies gains","Removes risk","Only magnifies losses"],c:0},
- {type:"mcq",q:"Convergence in growth theory means:",o:["Poor countries grow faster","Rich grow faster","Equal growth","No growth"],c:0},
- {type:"mcq",q:"GST is regressive because:",o:["The poor spend a larger income share on it","The rich pay a higher rate","Food is taxed","It's a luxury tax"],c:0},
- {type:"mcq",q:"The neutral interest rate is consistent with:",o:["Inflation at target & economy at potential","Zero nominal rate","The average lending rate","The global benchmark"],c:0},
- {type:"written",q:"Explain why deflation was so damaging during the Great Depression. Use the real debt burden and real wages mechanisms.",model:"Deflation means falling prices. (1) Nominal debt is fixed, so when prices and incomes fall the REAL value of debt rises — borrowers struggle to repay, defaults rise, banks fail. (2) Nominal wages are sticky downward, so falling prices RAISE real wages, making labour more expensive, so firms cut employment. Both mechanisms deepen the downturn (debt-deflation spiral), seen in figures like Germany's 43.5% unemployment in 1932."},
- {type:"written",q:"Explain the effect of an increase in government spending using the AD/AS model.",model:"Higher government spending shifts AD to the right. In the short run this raises both output (creating a positive output gap, Y > Yf) and the price level along the upward-sloping SAS. Over time, with output above potential, nominal wages rise, shifting SAS left until the economy returns to potential output Yf — leaving a permanently higher price level but unchanged long-run output (consistent with a vertical LAS)."},
- {type:"written",q:"Explain the Policy Trilemma and why NZ cannot have a fixed exchange rate.",model:"The Policy Trilemma (Impossible Trinity) says a country can have at most two of: a fixed exchange rate, free capital mobility, and an independent monetary policy. NZ chooses free capital mobility and an independent monetary policy (so the RBNZ can set the OCR for domestic goals). Because it has chosen those two, it must let the exchange rate float — it cannot also fix the exchange rate without giving up either capital mobility or monetary independence."},
- {type:"written",q:"Calculate the EMTR for a worker whose income rises from $70,000 to $75,000, with Working for Families payments falling from $11,024 to $9,828, and a 30% marginal tax rate.",model:"Extra income = $5,000. Tax on it = 30% × $5,000 = $1,500. WFF abatement = $11,024 − $9,828 = $1,196 lost. Total lost = $1,500 + $1,196 = $2,696. EMTR = $2,696 ÷ $5,000 = 53.9%. So nearly 54 cents of each extra dollar is lost to tax and benefit abatement."},
- {type:"written",q:"List and briefly explain three reasons NZ's post-COVID inflation 'got away'.",model:"(1) Massive monetary stimulus — OCR cut to 0.25% plus LSAP injected money (MV up). (2) Large fiscal stimulus boosting aggregate demand. (3) Global supply-chain disruptions and high shipping/energy costs (supply shocks). A fourth factor: rising/de-anchored inflation expectations becoming self-fulfilling."},
- {type:"written",q:"Explain why free trade often faces political resistance despite raising aggregate income.",model:"'Concentrated benefits, dispersed costs': the gains from trade (cheaper goods) are spread thinly across millions of consumers who each gain a little and don't organise, while the losses fall heavily on specific protected industries/workers who lobby hard. Politically the motivated losers outweigh the diffuse winners, so protection persists even though openness raises total income (e.g. ~$17,521 vs ~$2,362 GDP per capita for always-open vs always-closed economies)."},
- {type:"written",q:"Distinguish between an illiquid and an insolvent bank, and explain why the distinction matters in a crisis.",model:"An illiquid bank cannot meet immediate cash demands even though its assets exceed its liabilities (a timing problem) — it can be saved by a lender-of-last-resort providing temporary cash. An insolvent bank has liabilities exceeding assets (a fundamental problem) — lending it cash won't fix it; it needs recapitalisation or resolution. In a crisis (e.g. the GFC), the difficulty is telling the two apart, especially when no one knows who holds toxic assets, which freezes interbank lending."},
+const EXAM_MCQ = [
+ {q:"What is 'narrow money' (M1) best described as?",o:["A","Notes, coins and bank deposits used for transactions","B","All financial assets including bonds and equities","C","Only notes and coins in circulation","D","Total credit extended by commercial banks"],c:1,label:"B"},
+ {q:"When the RBNZ 'loosens' monetary policy by cutting the OCR, which of the following best describes the direct effect in the money market?",o:["A","Money demand shifts right","B","Money demand shifts left","C","Money supply shifts right","D","Money supply shifts left"],c:2,label:"C"},
+ {q:"Suppose the money supply grows at 7%, velocity is constant, and real GDP grows at 2%. Using the Quantity Theory of Money, what is the implied inflation rate?",o:["A","2%","B","7%","C","9%","D","5%"],c:3,label:"D"},
+ {q:"Who is HARMED by unexpectedly HIGH inflation?",o:["A","Borrowers with fixed nominal loans","B","Savers holding fixed nominal assets","C","Firms with fixed nominal costs","D","Governments with large nominal debts"],c:1,label:"B"},
+ {q:"In the long-run equilibrium of the ADAS model, where does the economy settle?",o:["A","Where SAS crosses AD only","B","Where AD is at its steepest","C","Where AD, SAS and LAS all intersect","D","Where SAS is vertical"],c:2,label:"C"},
+ {q:"If the RBNZ cuts the OCR and spending increases, moving AD rightward while SAS is unchanged, what happens to the price level in the SHORT run?",o:["A","Falls","B","Unchanged","C","Rises","D","Cannot be determined"],c:2,label:"C"},
+ {q:"A POSITIVE output gap (Y > Yf) puts what pressure on nominal wages over time?",o:["A","Upward pressure — workers bargain for higher wages","B","Downward pressure — unemployment rises","C","No pressure — wages are perfectly flexible","D","Downward pressure — firms cut prices"],c:0,label:"A"},
+ {q:"An increase in the OCR causes the NZ dollar to appreciate. Which mechanism explains this?",o:["A","Higher OCR lowers inflation, boosting competitiveness","B","Higher OCR reduces imports, improving the current account","C","Higher OCR raises government revenue, strengthening fiscal position","D","Higher OCR raises NZ returns, attracting capital inflows and increasing demand for NZD"],c:3,label:"D"},
+ {q:"The long-run Phillips Curve (LRPC) is best described as:",o:["A","Downward sloping, showing a trade-off between inflation and unemployment","B","Vertical at the natural rate of unemployment","C","Horizontal at the inflation target","D","Upward sloping reflecting supply-side constraints"],c:1,label:"B"},
+ {q:"Which of the following would INCREASE child labour in a developing country?",o:["A","Higher adult wages","B","Poverty that forces families to rely on children's income","C","Compulsory schooling laws","D","Microfinance access for adult entrepreneurs"],c:1,label:"B"},
+ {q:"On a K/L vs Y/L diagram (growth model), what does a HIGHER capital-labour ratio imply, ceteris paribus?",o:["A","Higher output per worker","B","Lower output per worker","C","No change in output","D","Higher population growth"],c:0,label:"A"},
+ {q:"How does microfinance primarily help reduce poverty in developing countries?",o:["A","By providing foreign aid grants to governments","B","By lowering trade tariffs","C","By giving small loans to low-income entrepreneurs who lack access to formal credit","D","By training skilled workers for export industries"],c:2,label:"C"},
+ {q:"Starting from a negative output gap, the SRPC self-correction process involves:",o:["A","AD shifting right as government increases spending","B","SAS shifting right as wages fall, lowering costs","C","LAS shifting right as technology improves","D","SAS shifting left as wages fall, reducing costs and moving the economy back to potential"],c:3,label:"D"},
+ {q:"Over recent decades, inequality in New Zealand has:",o:["A","Fallen sharply","B","Remained constant","C","Risen, with the Gini coefficient increasing from the 1980s","D","Fallen due to redistribution"],c:2,label:"C"},
+ {q:"Relative poverty is defined as:",o:["A","Having less than $2 per day","B","Having income below a fraction (e.g. 60%) of the median","C","Being unable to afford food","D","Having no access to credit"],c:1,label:"B"},
+ {q:"Fractional reserve banking means banks:",o:["A","Hold 100% of deposits as reserves","B","Lend out most deposits and hold only a fraction as reserves","C","Are not allowed to make loans","D","Are fully funded by central bank money"],c:1,label:"B"},
+ {q:"Which of the following is the PRECAUTIONARY motive for holding money?",o:["A","To take advantage of falling bond prices","B","To cover unexpected expenses","C","To make planned purchases","D","To earn interest"],c:1,label:"B"},
+ {q:"The Fisher effect states that the nominal interest rate equals:",o:["A","The real interest rate minus expected inflation","B","Expected inflation minus the real interest rate","C","The real interest rate divided by expected inflation","D","The real interest rate plus expected inflation"],c:3,label:"D"},
+ {q:"Who is HARMED by unexpectedly HIGH inflation on an ANNUAL basis?",o:["A","A wage earner whose salary is fully indexed to CPI","B","A pensioner receiving a fixed nominal pension","C","A borrower with a variable-rate mortgage","D","The government, which has a floating-rate debt"],c:0,label:"A"},
+ {q:"The Short-Run Aggregate Supply (SAS) curve slopes upward because:",o:["A","Nominal wages are fixed in the short run, so higher prices raise profit margins and output","B","Higher prices reduce real wages, reducing labour supply","C","Firms invest more when prices rise","D","Government spending increases with prices"],c:0,label:"A"},
+ {q:"If the price level falls unexpectedly, the real value of a fixed nominal debt:",o:["A","Falls — debtors benefit","B","Is unchanged","C","Falls — creditors benefit","D","Rises — debtors are harmed"],c:3,label:"D"},
+ {q:"Sticky wages in the short run mean that when demand falls:",o:["A","Employment falls rather than wages immediately adjusting downward","B","Wages immediately fall to restore employment","C","Prices fall faster than wages","D","The OCR automatically rises"],c:0,label:"A"},
+ {q:"An unexpected rise in oil prices would MOST LIKELY cause:",o:["A","SAS to shift right (lower costs)","B","AD to shift right (higher spending)","C","SAS to shift left (higher costs, reducing supply)","D","LAS to shift left permanently"],c:2,label:"C"},
+ {q:"An increase in the OCR causes:",o:["A","The NZD to depreciate, boosting exports","B","The NZD to appreciate, reducing import prices and dampening inflation","C","AD to shift right","D","SAS to shift right"],c:1,label:"B"},
+ {q:"Convergence in growth theory predicts that:",o:["A","All countries grow at the same rate permanently","B","Rich countries grow faster than poor ones","C","Poor countries grow faster than rich ones due to diminishing returns to capital","D","Growth rates are unrelated to initial capital stock"],c:2,label:"C"},
+ {q:"Which of the following BEST supports long-run economic growth?",o:["A","High inflation","B","Low investment rates","C","Poor institutions and weak property rights","D","Strong property rights and rule of law"],c:3,label:"D"},
+ {q:"An INWARD-looking development strategy involves:",o:["A","Promoting exports through subsidies","B","Joining international free trade agreements","C","Protecting domestic industry through tariffs and import substitution","D","Encouraging foreign direct investment"],c:2,label:"C"},
+ {q:"The Gini coefficient WIDENED from 2000 to 2010 in a country. This means:",o:["A","The poor got richer faster than the rich","B","Income inequality increased","C","Absolute poverty fell","D","The Lorenz curve shifted toward the line of equality"],c:1,label:"B"},
+ {q:"During the 2008 Global Financial Crisis, house prices in New Zealand:",o:["A","Rose sharply","B","Were unaffected","C","Fell slightly then quickly recovered","D","Fell, and the housing market remained weak for several years"],c:3,label:"D"},
+ {q:"The Marginal Propensity to Consume (MPC) measures:",o:["A","The fraction of total income that is saved","B","The fraction of extra income that is spent on imports","C","The fraction of an extra dollar of income that is spent on consumption","D","The total level of consumption at zero income"],c:2,label:"C"},
+];
+
+const EXAM_WRITTEN = [
+ {
+  marks:5,
+  q:"Exchange Rates",
+  parts:[
+   {sub:"(a)",marks:1,q:"Define the term 'spot exchange rate'.",answer:"The spot exchange rate is the price at which one currency can be exchanged for another for immediate (same-day or next-day) delivery. For example, the NZD/JPY spot rate of ¥80 means 1 NZD buys ¥80 today.",diagram:false},
+   {sub:"(b)",marks:2,q:"A New Zealand exporter expects to receive ¥10,000,000 in three months' time. The current spot rate is NZD/JPY = ¥80. The available 3-month forward rates are: ¥78, ¥82, ¥85. Which forward rate should the exporter SELL yen at to hedge their exposure? Justify your answer.",answer:"The exporter should sell yen forward at ¥82. The forward rate should reflect interest-rate parity/PPP. NZ has higher interest rates than Japan, so the NZD is expected to appreciate (¥ to depreciate), meaning forward rates should be slightly below spot. ¥82 is close to spot and consistent with realistic hedging; ¥78 under-values yen too much and ¥85 would be a gain but wouldn't be available at a fair market price. (Accept ¥82 with any reasonable explanation of why the chosen rate is appropriate for hedging.)",diagram:false},
+   {sub:"(c)",marks:2,q:"Briefly explain why a New Zealand firm that receives foreign currency payments might use the forward exchange market.",answer:"A firm can lock in a known exchange rate today for a future transaction, eliminating the risk that the NZD will appreciate before payment is received (which would reduce the NZD value of earnings). This certainty helps with cash-flow planning and budgeting.",diagram:false},
+  ]
+ },
+ {
+  marks:5,
+  q:"Labour Market",
+  parts:[
+   {sub:"(a)",marks:2,q:"The working-age population is 4,100,000. Of these, 2,911,000 are in the labour force. Calculate the labour force participation rate (to one decimal place).",answer:"Participation rate = Labour force ÷ Working-age population × 100 = 2,911,000 ÷ 4,100,000 × 100 = 71.0%",diagram:false},
+   {sub:"(b)",marks:1,q:"Define the 'labour force participation rate'.",answer:"The labour force participation rate is the proportion of the working-age population that is either employed or actively seeking employment (i.e., in the labour force).",diagram:false},
+   {sub:"(c)",marks:1,q:"If the participation rate falls, what happens to the measured unemployment rate, all else equal?",answer:"The unemployment rate falls (or could fall), because people who stop looking for work leave the labour force entirely — they are no longer counted as unemployed even if they are not employed. This can make the labour market appear tighter than it actually is.",diagram:false},
+   {sub:"(d)",marks:1,q:"Give ONE reason why the participation rate might fall.",answer:"Any one of: (1) Discouraged workers give up job searching. (2) An ageing population (more retirees). (3) More people entering full-time education. (4) Increased stay-at-home caregiving responsibilities.",diagram:false},
+  ]
+ },
+ {
+  marks:5,
+  q:"The Tax System",
+  parts:[
+   {sub:"(a)",marks:2,q:"Complete the following table for a progressive income tax system. Taxable income: $0–$14,000 at 10.5%; $14,001–$48,000 at 17.5%; $48,001–$70,000 at 30%; $70,001–$180,000 at 33%. Calculate the total tax and average tax rate for a person earning $80,000.",answer:"Tax on $0–$14,000 = $1,470. Tax on $14,001–$48,000 = $5,950. Tax on $48,001–$70,000 = $6,600. Tax on $70,001–$80,000 = $3,300. Total tax = $17,320. Average tax rate = $17,320 ÷ $80,000 = 21.65%.",diagram:false},
+   {sub:"(b)",marks:2,q:"Explain what is meant by 'vertical equity' in a tax system.",answer:"Vertical equity means that people with different (higher) incomes should pay proportionately more tax — those who have greater ability to pay should bear a greater tax burden. A progressive income tax embodies vertical equity: the marginal tax rate rises with income.",diagram:false},
+   {sub:"(c)",marks:1,q:"Explain the concept of 'fiscal drag'.",answer:"Fiscal drag (also called bracket creep) occurs when inflation pushes nominal incomes into higher tax brackets without any real increase in purchasing power, effectively raising the average tax rate. This increases government revenue and reduces disposable income in real terms without any legislative change to tax rates.",diagram:false},
+  ]
+ },
+ {
+  marks:9,
+  q:"ADAS Model — Part 1 (refer to the OCR News Release above)",
+  parts:[
+   {sub:"(a)",marks:5,q:"The OCR release states: 'There is spare productive capacity in the economy.' Draw an ADAS diagram that illustrates this situation. Label all curves (AD, SAS, LAS), the price level (P) on the vertical axis, real GDP (Y) on the horizontal axis, long-run potential output (Yf), and the short-run equilibrium price level and output. Make sure your diagram clearly shows the spare productive capacity.",answer:"Diagram should show: LAS vertical at Yf; AD and SAS intersecting at a point to the LEFT of LAS (i.e., Y < Yf), with the equilibrium price level below the long-run equilibrium. This represents a negative output gap / spare productive capacity. Key labels: AD (downward sloping), SAS (upward sloping), LAS (vertical), P* (current price level), Y* (current output), Yf (potential/long-run output), with Y* < Yf clearly visible.",diagram:true,diagramHint:"Draw AD, SAS, LAS curves. SAS ∩ AD should be to the LEFT of LAS (negative output gap). Label: P-axis (vertical), Y-axis (horizontal), Yf (on Y-axis), P* and Y* at intersection."},
+   {sub:"(b)",marks:4,q:"The RBNZ has cut the OCR to try to return the economy to potential output. Starting from your diagram in (a), explain and show the SELF-CORRECTION mechanism that would bring inflation back toward target WITHOUT RBNZ intervention, if the economy had spare capacity. That is, show the long-run adjustment in your diagram.",answer:"With spare capacity (Y < Yf), there is downward pressure on nominal wages (unemployment is above natural rate, workers accept lower wages). As nominal wages fall, production costs fall, SAS shifts RIGHT (downward) over time. This shift moves the equilibrium back toward Yf at a lower price level. The economy self-corrects: output rises toward potential, and any inflationary pressures ease. On the diagram: SAS shifts right until the new intersection of AD and SAS is at Yf (on LAS). Price level falls slightly to P** < P*.",diagram:true,diagramHint:"Show SAS shifting RIGHT from original position until it intersects AD at Yf (on the LAS). New equilibrium: P** lower, Y = Yf."},
+  ]
+ },
+ {
+  marks:11,
+  q:"ADAS Model — Part 2 (refer to the OCR News Release above)",
+  parts:[
+   {sub:"(a)",marks:5,q:"The OCR release states: 'If global trade barriers increase significantly, New Zealand's export growth and broader economic activity could be adversely affected.' Using an ADAS diagram, show and explain the effect of significantly increased global trade barriers on New Zealand's economy. Start from a position of long-run equilibrium.",answer:"Starting from long-run equilibrium (AD ∩ SAS ∩ LAS at Yf). Increased global trade barriers reduce NZ exports (X falls), so net exports fall, reducing Aggregate Demand. AD shifts LEFT. New short-run equilibrium: lower price level P** and lower output Y** < Yf (negative output gap / spare productive capacity). This is consistent with the OCR release's concern about subdued global growth harming NZ. Diagram: AD shifts left; new intersection of AD' and SAS is to left of LAS.",diagram:true,diagramHint:"Start: AD ∩ SAS ∩ LAS at Yf. Show AD shifting LEFT to AD'. New equilibrium at intersection of AD' and SAS: Y** < Yf, P** < P*. Label the negative output gap."},
+   {sub:"(b)",marks:3,q:"The RBNZ cut the OCR by 50 basis points. Explain TWO channels through which this OCR cut will increase Consumption (C) in New Zealand.",answer:"(1) Lower mortgage rates / borrowing costs: A lower OCR feeds through to lower retail mortgage rates. Households with floating-rate mortgages have lower monthly payments, increasing disposable income and spending (C rises). (2) Wealth effect / housing: Lower interest rates raise asset prices (especially housing). Homeowners feel wealthier and are more willing to spend (positive wealth effect on C). (Accept also: lower savings return encourages spending rather than saving; improved consumer confidence.)",diagram:false},
+   {sub:"(c)",marks:3,q:"Explain TWO channels through which the OCR cut will increase Investment (I) in New Zealand.",answer:"(1) Lower cost of borrowing: Firms face lower interest rates on loans/bonds, making investment projects that were previously marginally unprofitable now worthwhile (more projects have NPV > 0). Firms invest more in capital. (2) Exchange rate channel: Lower OCR reduces NZ interest rates relative to overseas, causing the NZD to depreciate. This makes NZ exports cheaper and imports more expensive, improving competitiveness — encouraging investment in export-oriented industries. (Accept also: improved business confidence / animal spirits with lower financing costs.)",diagram:false},
+  ]
+ },
+ {
+  marks:10,
+  q:"Quantity Theory of Money",
+  parts:[
+   {sub:"(a)",marks:2,q:"Using the Quantity Theory of Money (MV = PY, or equivalently %ΔM + %ΔV = %ΔP + %ΔY), and assuming velocity is constant, calculate the inflation rate if money supply grows at 7% and real GDP grows at 2%.",answer:"%ΔM + %ΔV = %ΔP + %ΔY → 7% + 0% = %ΔP + 2% → %ΔP = 5%. Inflation is 5%.",diagram:false},
+   {sub:"(b)",marks:2,q:"Justify why someone holding a FIXED nominal bank deposit is HARMED by 5% inflation (as calculated above).",answer:"A fixed nominal deposit earns a set dollar amount in interest/repayment. With 5% inflation, the real value of that deposit erodes — the holder can buy 5% fewer goods and services with the money returned. The real return falls. If the nominal interest rate is below 5%, the real interest rate is negative, meaning they actually lose purchasing power by holding the deposit.",diagram:false},
+   {sub:"(c)",marks:2,q:"In 2008, NZ's nominal interest rate was approximately 8.5% and actual inflation was 5.6%. Calculate the real interest rate using the Fisher equation.",answer:"Real interest rate = Nominal rate − Inflation = 8.5% − 5.6% = 2.9%",diagram:false},
+   {sub:"(d)",marks:2,q:"Using the concept of money neutrality and the Quantity Theory of Money, if the RBNZ increased the money supply by 2.1% and real GDP is at its long-run potential (growth at 0%), what would be the estimated inflation rate?",answer:"With money neutrality and V constant: %ΔM = %ΔP + %ΔY → 2.1% = %ΔP + 0% → %ΔP = 2.1%. Inflation = 2.1%. This is consistent with the RBNZ's 2% midpoint target.",diagram:false},
+   {sub:"(e)",marks:2,q:"In 1976, NZ had high nominal interest rates (around 9%) but inflation was running at 16%. Explain what this meant for savers and why this might have affected their behaviour.",answer:"Real interest rate = 9% − 16% = −7%. Savers were losing 7% of their purchasing power per year in real terms. This gave savers a strong incentive NOT to hold money or fixed nominal deposits. Instead, they would rationally shift into real assets (property, shares, gold, commodities) or spend now before prices rose further — contributing to inflationary pressure and asset price inflation.",diagram:false},
+  ]
+ },
+ {
+  marks:17,
+  q:"Economic Growth",
+  parts:[
+   {sub:"(a)",marks:2,q:"List TWO factors that empirical research has found to be positively correlated with long-run economic growth.",answer:"Any two of: (1) Strong property rights and rule of law / good institutions. (2) Openness to international trade (outward-looking strategy). (3) High investment rate (physical capital accumulation). (4) Higher levels of human capital / education. (5) Access to technology / innovation. (6) Macroeconomic stability (low inflation, stable fiscal policy).",diagram:false},
+   {sub:"(b)",marks:5,q:"Draw a K/L vs Y/L diagram (capital per worker vs output per worker) for TWO countries: Mexico and the USA. The USA has a much higher capital-labour ratio than Mexico. Show both countries on the SAME production function curve, label their respective K/L ratios and Y/L levels, and identify which country has a higher Y/L.",answer:"Diagram: Standard concave production function Y/L = f(K/L) with diminishing returns. USA: plotted at high K/L (right side of curve), corresponding high Y/L (output per worker). Mexico: plotted at lower K/L (left/middle of curve), lower Y/L. Key: same production function (same technology assumption), USA higher on both axes. Label: K/L on x-axis, Y/L on y-axis. Mark K/L_Mexico < K/L_USA and Y/L_Mexico < Y/L_USA.",diagram:true,diagramHint:"Draw a single concave curve (diminishing returns). Plot Mexico at lower K/L (left), USA at higher K/L (right). Draw horizontal lines to Y/L axis to show Y/L_USA > Y/L_Mexico. Label axes: K/L (horizontal), Y/L (vertical)."},
+   {sub:"(c)",marks:2,q:"Based on the diagram, which country — Mexico or the USA — would you expect to have a HIGHER growth rate of output per worker, according to growth theory? Explain why.",answer:"Mexico would have a higher growth rate. Because Mexico operates at a lower K/L ratio where the production function is steeper (marginal product of capital is higher). Each additional unit of capital per worker generates more additional output per worker than it does in the USA. This is the convergence prediction: capital-scarce countries earn higher returns to investment and grow faster, gradually catching up.",diagram:false},
+   {sub:"(d)",marks:4,q:"List and briefly explain FOUR factors that might inhibit Mexico from achieving its growth potential.",answer:"Any four of: (1) Weak property rights / corruption — discourages investment as firms fear expropriation. (2) Low human capital — inadequate education/health limits worker productivity. (3) Political instability — uncertainty reduces FDI and domestic investment. (4) Trade barriers / inward-looking policies — reduce access to technology and competitive pressure. (5) Poor infrastructure — raises transport and business costs, reducing returns to investment. (6) Financial market underdevelopment — firms cannot access credit to invest. (7) High inequality — reduces social mobility and human capital formation.",diagram:false},
+   {sub:"(e)",marks:4,q:"The US government under President Trump imposed significant tariffs on imports from many countries. Explain, using growth theory, the likely effect of these trade policies on long-run US economic growth.",answer:"Protectionist tariffs (import barriers) are likely to REDUCE long-run US growth for several reasons: (1) Reduced competition: domestic firms face less competitive pressure, reducing incentive to innovate or improve productivity. (2) Less technology transfer: fewer imported goods and services means less exposure to foreign innovation and efficiency. (3) Misallocation: resources shift to protected, less efficient industries — opportunity cost is lower growth in industries where the US has comparative advantage. (4) Retaliation: other countries impose counter-tariffs, reducing US export markets and further lowering productivity in export industries. Growth theory and empirical evidence strongly favour openness to trade for long-run prosperity.",diagram:false},
+  ]
+ },
+ {
+  marks:8,
+  q:"Inequality and Poverty",
+  parts:[
+   {sub:"(a)",marks:4,q:"The following Gini coefficients are observed: Mexico 2000: 0.543; Mexico 2020: 0.458; USA 2000: 0.394; USA 2020: 0.411. Interpret these data in terms of changes in inequality WITHIN each country and whether inequality is CONVERGING between the two countries.",answer:"Within Mexico: The Gini fell from 0.543 to 0.458 — inequality DECREASED significantly over the period. Mexico became more equal. Within USA: The Gini rose from 0.394 to 0.411 — inequality INCREASED moderately. The USA became slightly less equal. Convergence: The gap narrowed from (0.543−0.394=) 0.149 in 2000 to (0.458−0.411=) 0.047 in 2020. The two countries are CONVERGING in terms of income inequality, with Mexico improving and the USA worsening.",diagram:false},
+   {sub:"(b)",marks:2,q:"Define 'relative poverty'. How is a relative poverty threshold typically set, and what decisions does it require policymakers to make?",answer:"Relative poverty is defined as having income below a specified fraction of the median income in a society. It is a measure of inequality rather than absolute deprivation. A typical threshold: 50% or 60% of median equivalised household income. Policymakers must decide: (1) What fraction of median income to use as the threshold (e.g. 50% vs 60%). (2) What income measure to use (before or after housing costs, equivalised for household size). (3) Which population to count (individuals, households, children).",diagram:false},
+   {sub:"(c)",marks:2,q:"Explain how a fall in relative poverty in Mexico (as suggested by the data above) could occur even if some poor Mexicans became ABSOLUTELY worse off.",answer:"Relative poverty is measured relative to the median income. If median income rises substantially, the relative poverty threshold (e.g. 60% of median) also rises. Even if some of the poorest households saw slight income decreases, if their incomes remained above the new (higher) threshold, they would not be counted as relatively poor — and measured relative poverty could fall. Alternatively, if the rich got much richer but the very poor improved only slightly, absolute poverty among the poorest might worsen while relative inequality (Gini) still falls if the middle class improved more than the very top.",diagram:false},
+  ]
+ },
 ];
 
 /* ============ NAV / PARTICLES ============ */
@@ -640,7 +791,7 @@ const MODES=[
  {id:'flashcards',icon:'🎴',name:'Flashcards',desc:'60+ cards across Weeks 7–12. Flip, shuffle, track what you know.',badge:'easy',fn:initFlashcards},
  {id:'quiz',icon:'📝',name:'MCQ Quiz',desc:'10-question quizzes by topic, with explanations & review.',badge:'medium',fn:initQuiz},
  {id:'connect4',icon:'🔴',name:'Connect Four',desc:'Answer to drop a piece. 2-player or vs computer.',badge:'multi',fn:initC4},
- {id:'exam',icon:'🎓',name:'Practice Exam',desc:'20 questions, 45-min timer, MCQ + written self-marking.',badge:'hard',fn:initExam},
+ {id:'exam',icon:'🎓',name:'Practice Exam',desc:'Real exam format: 30 MCQ + 70 marks written, 3-hour timer, OCR news release included.',badge:'hard',fn:initExam},
  {id:'speed',icon:'⚡',name:'Speed Round',desc:'60 seconds, max questions, high-score leaderboard.',badge:'medium',fn:initSpeed},
  {id:'wordmatch',icon:'🔗',name:'Word Match',desc:'Match terms to definitions against the clock.',badge:'easy',fn:initWordMatch},
  {id:'blitz',icon:'🔥',name:'True/False Blitz',desc:'5 seconds each. Build the longest streak!',badge:'medium',fn:initBlitz},
@@ -853,49 +1004,137 @@ function highlightWin(line){
 }
 
 /* ============ PRACTICE EXAM ============ */
-let examIdx=0,examAns={},examTime=45*60;
-function initExam(){show('exam-setup','exam');document.getElementById('exam-timer').textContent='45:00'}
+let examAns={},examWritten={},examTime=3*60*60;
+function initExam(){
+  document.querySelectorAll('#exam > div[id]').forEach(d=>d.style.display='none');
+  document.getElementById('exam-setup').style.display='block';
+}
 function startExam(){
-  examIdx=0;examAns={};examTime=45*60;
-  show('exam-play','exam');document.getElementById('exam-play').style.display='flex';
-  renderExamNav();renderExamQ();
+  examAns={};examWritten={};examTime=3*60*60;
+  document.querySelectorAll('#exam > div[id]').forEach(d=>d.style.display='none');
+  const play=document.getElementById('exam-play');
+  play.style.display='flex';
+  buildExamMCQ();
+  buildExamWritten();
+  examTab('a');
+  updateExamCounts();
   if(examTimer)clearInterval(examTimer);
-  examTimer=setInterval(()=>{examTime--;const m=Math.floor(examTime/60),s=examTime%60;
-    document.getElementById('exam-timer').textContent=m+':'+String(s).padStart(2,'0');
-    if(examTime<=0){clearInterval(examTimer);submitExam()}},1000);
+  examTimer=setInterval(()=>{
+    examTime--;
+    const h=Math.floor(examTime/3600),m=Math.floor((examTime%3600)/60),s=examTime%60;
+    document.getElementById('exam-timer').textContent=h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(examTime<=0){clearInterval(examTimer);submitExam()}
+  },1000);
 }
-function renderExamNav(){
-  document.getElementById('exam-nav').innerHTML=EXAM.map((q,i)=>`<div class="exam-dot ${examAns[i]!=null?'answered':''} ${i==examIdx?'current':''}" onclick="examGo(${i})">${i+1}</div>`).join('');
+function examTab(t){
+  document.getElementById('exam-panel-a').style.display=t==='a'?'block':'none';
+  document.getElementById('exam-panel-b').style.display=t==='b'?'block':'none';
+  document.getElementById('tab-a').className='btn small'+(t==='a'?'':' ghost');
+  document.getElementById('tab-b').className='btn small'+(t==='b'?'':' ghost');
 }
-function examGo(i){examIdx=i;renderExamQ();renderExamNav()}
-function examNav(d){examIdx=Math.max(0,Math.min(EXAM.length-1,examIdx+d));renderExamQ();renderExamNav()}
-function renderExamQ(){
-  const q=EXAM[examIdx];
-  document.getElementById('exam-qnum').textContent=`Question ${examIdx+1} of ${EXAM.length} · ${q.type=='mcq'?'Multiple Choice':'Written'}`;
-  document.getElementById('exam-qtext').textContent=q.q;
-  const body=document.getElementById('exam-body');
-  if(q.type=='mcq'){
-    body.innerHTML=q.o.map((o,i)=>`<button class="opt ${examAns[examIdx]==i?'correct':''}" onclick="examPick(${i})">${o}</button>`).join('');
-  }else{
-    body.innerHTML=`<textarea class="written-answer" oninput="examWrite(this.value)" placeholder="Type your answer...">${examAns[examIdx]||''}</textarea>`;
+function buildExamMCQ(){
+  const list=document.getElementById('exam-mcq-list');
+  list.innerHTML=EXAM_MCQ.map((q,qi)=>{
+    const opts=['A','B','C','D'];
+    const optsHtml=opts.map((lbl,oi)=>{
+      const txt=q.o[oi*2+1];
+      return `<button class="opt ${examAns[qi]===oi?'selected':''}" onclick="pickMCQ(${qi},${oi})" id="mcq-${qi}-${oi}">${lbl}. ${txt}</button>`;
+    }).join('');
+    return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
+      <div class="exam-q-header"><span style="font-weight:700;font-size:15px"><span style="color:var(--accent)">${qi+1}.</span> ${q.q}</span><span class="marks-badge">1 mark</span></div>
+      <div>${optsHtml}</div>
+    </div>`;
+  }).join('');
+}
+function pickMCQ(qi,oi){
+  examAns[qi]=oi;
+  // Update button styles for this question
+  ['A','B','C','D'].forEach((_,i)=>{
+    const btn=document.getElementById(`mcq-${qi}-${i}`);
+    if(btn)btn.className='opt'+(i===oi?' selected':'');
+  });
+  updateExamCounts();
+}
+function buildExamWritten(){
+  const list=document.getElementById('exam-written-list');
+  let qNum=0;
+  list.innerHTML=EXAM_WRITTEN.map((q,wi)=>{
+    qNum++;
+    const partsHtml=q.parts.map((p,pi)=>`
+      <div style="margin-bottom:16px;padding-left:12px;border-left:3px solid var(--border)">
+        <div class="exam-q-header">
+          <span style="font-size:14px;font-weight:600">${p.sub} ${p.q}</span>
+          <span class="marks-badge">${p.marks} mark${p.marks>1?'s':''}</span>
+        </div>
+        ${p.diagram?`<div class="diagram-box"><div class="diagram-hint">📐 Draw your diagram here on paper. Key elements to include:<br>${p.diagramHint}</div></div>`:''}
+        <textarea class="written-answer" rows="4" placeholder="Type your answer here (or note it down on paper)..." oninput="saveWritten(${wi},${pi},this.value)">${(examWritten[wi]||{})[pi]||''}</textarea>
+      </div>`).join('');
+    return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px">
+      <div class="exam-q-header">
+        <h3 style="font-size:16px;font-weight:800">Question ${qNum}: ${q.q}</h3>
+        <span class="marks-badge">${q.marks} marks</span>
+      </div>
+      ${partsHtml}
+    </div>`;
+  }).join('');
+}
+function saveWritten(wi,pi,val){
+  if(!examWritten[wi])examWritten[wi]={};
+  examWritten[wi][pi]=val;
+  updateExamCounts();
+}
+function updateExamCounts(){
+  const mcqDone=Object.keys(examAns).length;
+  let writtenDone=0;
+  EXAM_WRITTEN.forEach((q,wi)=>{if(q.parts.some((_,pi)=>(examWritten[wi]||{})[pi]?.trim()))writtenDone++});
+  document.getElementById('exam-a-count').textContent=`A: ${mcqDone}/30`;
+  document.getElementById('exam-b-count').textContent=`B: ${writtenDone}/8`;
+}
+function confirmSubmit(){
+  const mcqDone=Object.keys(examAns).length;
+  if(mcqDone<30){
+    if(!confirm(`You have only answered ${mcqDone}/30 MCQ questions. Submit anyway?`))return;
   }
+  submitExam();
 }
-function examPick(i){examAns[examIdx]=i;renderExamQ();renderExamNav()}
-function examWrite(v){examAns[examIdx]=v;renderExamNav()}
 function submitExam(){
   if(examTimer)clearInterval(examTimer);
-  let mcqTotal=0,mcqCorrect=0;
-  EXAM.forEach((q,i)=>{if(q.type=='mcq'){mcqTotal++;if(examAns[i]==q.c)mcqCorrect++}});
-  show('exam-result','exam');document.getElementById('exam-result').style.display='block';
-  document.getElementById('exam-final').textContent='MCQ: '+mcqCorrect+'/'+mcqTotal+' ('+Math.round(mcqCorrect/mcqTotal*100)+'%)';
-  document.getElementById('exam-review').innerHTML=EXAM.map((q,i)=>{
-    if(q.type=='mcq'){
-      const ok=examAns[i]==q.c;
-      return `<div class="model-answer"><b>Q${i+1}:</b> ${q.q}<br><b>${ok?'✓':'✗'} Your answer:</b> ${examAns[i]!=null?q.o[examAns[i]]:'(blank)'}<br><b>Correct:</b> ${q.o[q.c]}</div>`;
-    }else{
-      return `<div class="model-answer"><b>Q${i+1}:</b> ${q.q}<br><b>Your answer:</b><br>${(examAns[i]||'(blank)').replace(/\n/g,'<br>')}<br><br><b>📘 Model answer:</b><br>${q.model}</div>`;
-    }
-  }).join('');
+  document.querySelectorAll('#exam > div[id]').forEach(d=>d.style.display='none');
+  const result=document.getElementById('exam-result');
+  result.style.display='block';
+  window.scrollTo(0,0);
+  // Score MCQ
+  let correct=0;
+  EXAM_MCQ.forEach((q,i)=>{if(examAns[i]===q.c)correct++});
+  document.getElementById('exam-mcq-score').textContent=`Section A: ${correct}/30 (${Math.round(correct/30*100)}%)`;
+  // Build review
+  const rev=document.getElementById('exam-review');
+  let html='<h3 style="margin-bottom:14px;font-size:18px;font-weight:800">Section A — MCQ Review</h3>';
+  EXAM_MCQ.forEach((q,i)=>{
+    const ok=examAns[i]===q.c;
+    const chosen=examAns[i]!=null?['A','B','C','D'][examAns[i]]+'.'+(q.o[examAns[i]*2+1]):'(not answered)';
+    const correct_ans=q.label+'. '+q.o[q.c*2+1];
+    html+=`<div class="model-answer" style="border-left:3px solid ${ok?'var(--ok)':'var(--danger)'};margin-bottom:10px;padding:12px 14px;background:var(--card-bg);border-radius:10px">
+      <span style="font-weight:700;color:${ok?'var(--ok)':'var(--danger)'}">${ok?'✓':'✗'} Q${i+1}:</span> ${q.q}<br>
+      <span style="color:var(--text2)">Your answer:</span> ${chosen} &nbsp;|&nbsp; <span style="color:var(--ok)">Correct: ${correct_ans}</span>
+    </div>`;
+  });
+  html+='<h3 style="margin:22px 0 14px;font-size:18px;font-weight:800">Section B — Written Answer Model Answers</h3>';
+  EXAM_WRITTEN.forEach((q,wi)=>{
+    html+=`<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px">
+      <h4 style="font-size:15px;font-weight:800;margin-bottom:12px;color:var(--accent)">Question ${wi+1}: ${q.q} <span style="color:var(--text2);font-weight:400">(${q.marks} marks)</span></h4>`;
+    q.parts.forEach((p,pi)=>{
+      const ans=(examWritten[wi]||{})[pi]||'(no answer recorded)';
+      html+=`<div style="margin-bottom:14px;padding-left:12px;border-left:3px solid var(--border)">
+        <div style="font-weight:700;font-size:14px;margin-bottom:6px">${p.sub} ${p.q} <span class="marks-badge">${p.marks}m</span></div>
+        ${p.diagram?`<div class="diagram-box"><div class="diagram-hint">📐 Diagram key: ${p.diagramHint}</div></div>`:''}
+        <div style="background:var(--surface2);border-radius:8px;padding:10px;font-size:13px;color:var(--text2);margin-bottom:8px"><b>Your answer:</b><br>${ans.replace(/\n/g,'<br>')}</div>
+        <div style="background:rgba(0,200,150,.07);border-radius:8px;padding:10px;font-size:13px;line-height:1.6"><b style="color:var(--accent)">📘 Model answer:</b><br>${p.answer}</div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  rev.innerHTML=html;
 }
 
 /* ============ SPEED ROUND ============ */
