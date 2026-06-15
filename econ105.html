@@ -855,8 +855,14 @@ function prevCard(){fcIdx=(fcIdx-1+fcList.length)%fcList.length;renderFc()}
 function markCard(known){fcKnown[fcList[fcIdx].idx]=known;localStorage.setItem('econ-fcKnown',JSON.stringify(fcKnown));nextCard()}
 function shuffleCards(){for(let i=fcList.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcList[i],fcList[j]]=[fcList[j],fcList[i]]}fcIdx=0;renderFc()}
 
+function shuffleOpts(q){
+  const idx=[0,1,2,3];
+  for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
+  return {o:idx.map(i=>q.o[i]),c:idx.indexOf(q.c)};
+}
+
 /* ============ QUIZ ============ */
-let quizQs=[],quizIdx=0,quizScore=0,quizFilter='all',quizWrong=[];
+let quizQs=[],quizIdx=0,quizScore=0,quizFilter='all',quizWrong=[],quizShuffledC=0;
 function initQuiz(){
   const weeks=['all',7,8,9,10,11,12];
   document.getElementById('quiz-filters').innerHTML=weeks.map(w=>`<button class="filter-btn ${w==quizFilter?'active':''}" onclick="setQuizFilter('${w}')">${w=='all'?'All':'Week '+w}</button>`).join('');
@@ -872,18 +878,19 @@ function startQuiz(){
 }
 function renderQuizQ(){
   const q=quizQs[quizIdx];
+  const sh=shuffleOpts(q);quizShuffledC=sh.c;
   document.getElementById('quiz-qnum').textContent=`Question ${quizIdx+1} of ${quizQs.length} · Week ${q.w}`;
   document.getElementById('quiz-qtext').textContent=q.q;
   const opts=document.getElementById('quiz-opts');
-  opts.innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="answerQuiz(${i})">${o}</button>`).join('');
+  opts.innerHTML=sh.o.map((o,i)=>`<button class="opt" onclick="answerQuiz(${i})">${o}</button>`).join('');
   document.getElementById('quiz-explain').classList.remove('show');
   document.getElementById('quiz-next').style.display='none';
   document.getElementById('quiz-score').textContent='Score: '+quizScore;
 }
 function answerQuiz(i){
   const q=quizQs[quizIdx],opts=document.querySelectorAll('#quiz-opts .opt');
-  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
-  if(i==q.c)quizScore++;else quizWrong.push({...q,chose:i});
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==quizShuffledC)o.classList.add('correct');if(k==i&&i!=quizShuffledC)o.classList.add('wrong')});
+  if(i==quizShuffledC)quizScore++;else quizWrong.push({...q,chose:i});
   const ex=document.getElementById('quiz-explain');ex.textContent='💡 '+q.e;ex.classList.add('show');
   document.getElementById('quiz-score').textContent='Score: '+quizScore;
   document.getElementById('quiz-next').style.display='inline-block';
@@ -939,16 +946,17 @@ function c4Click(col){
 }
 function askC4Question(col,player){
   const q=MCQ[Math.floor(Math.random()*MCQ.length)];
-  c4pending={col,player,q};
+  const sh=shuffleOpts(q);
+  c4pending={col,player,q,shuf:sh};
   document.getElementById('c4-mq').textContent='('+c4names[player-1]+') '+q.q;
-  document.getElementById('c4-mopts').innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="answerC4(${i})">${o}</button>`).join('');
+  document.getElementById('c4-mopts').innerHTML=sh.o.map((o,i)=>`<button class="opt" onclick="answerC4(${i})">${o}</button>`).join('');
   document.getElementById('c4-modal').classList.add('show');
 }
 function answerC4(i){
-  const {col,player,q}=c4pending;
+  const {col,player,q,shuf}=c4pending;
   const opts=document.querySelectorAll('#c4-mopts .opt');
-  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
-  const correct=i==q.c;
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==shuf.c)o.classList.add('correct');if(k==i&&i!=shuf.c)o.classList.add('wrong')});
+  const correct=i==shuf.c;
   setTimeout(()=>{
     document.getElementById('c4-modal').classList.remove('show');
     c4pending=null;
@@ -1151,15 +1159,17 @@ function startSpeed(){
   if(speedTimer)clearInterval(speedTimer);
   speedTimer=setInterval(()=>{speedTime--;document.getElementById('speed-timer').textContent=speedTime;if(speedTime<=0)endSpeed()},1000);
 }
+let speedShuffledC=0;
 function nextSpeedQ(){
   speedQ=MCQ[Math.floor(Math.random()*MCQ.length)];
+  const sh=shuffleOpts(speedQ);speedShuffledC=sh.c;
   document.getElementById('speed-q').textContent=speedQ.q;
-  document.getElementById('speed-opts').innerHTML=speedQ.o.map((o,i)=>`<button class="opt" onclick="answerSpeed(${i})">${o}</button>`).join('');
+  document.getElementById('speed-opts').innerHTML=sh.o.map((o,i)=>`<button class="opt" onclick="answerSpeed(${i})">${o}</button>`).join('');
   document.getElementById('speed-correct').textContent='✓ '+speedCorrect;
   document.getElementById('speed-wrong').textContent='✗ '+speedWrong;
 }
 function answerSpeed(i){
-  if(i==speedQ.c)speedCorrect++;else speedWrong++;
+  if(i==speedShuffledC)speedCorrect++;else speedWrong++;
   nextSpeedQ();
 }
 function endSpeed(){
@@ -1270,17 +1280,18 @@ function trPick(cat){
   const used=trDone[cat]||0;
   if(used>=TRIVIA_CATS[cat].length)return;
   const q=TRIVIA_CATS[cat][used];
-  trPending={cat,q};
+  const sh=shuffleOpts(q);
+  trPending={cat,q,shuf:sh};
   document.getElementById('trivia-mtag').textContent=cat+' · '+q.pts+' points · '+trNames[trTurn];
   document.getElementById('trivia-mq').textContent=q.q;
-  document.getElementById('trivia-mopts').innerHTML=q.o.map((o,i)=>`<button class="opt" onclick="trAnswer(${i})">${o}</button>`).join('');
+  document.getElementById('trivia-mopts').innerHTML=sh.o.map((o,i)=>`<button class="opt" onclick="trAnswer(${i})">${o}</button>`).join('');
   document.getElementById('trivia-modal').classList.add('show');
 }
 function trAnswer(i){
-  const {cat,q}=trPending;
+  const {cat,q,shuf}=trPending;
   const opts=document.querySelectorAll('#trivia-mopts .opt');
-  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==q.c)o.classList.add('correct');if(k==i&&i!=q.c)o.classList.add('wrong')});
-  if(i==q.c)trScores[trTurn]+=q.pts;
+  opts.forEach((o,k)=>{o.classList.add('disabled');if(k==shuf.c)o.classList.add('correct');if(k==i&&i!=shuf.c)o.classList.add('wrong')});
+  if(i==shuf.c)trScores[trTurn]+=q.pts;
   trDone[cat]=(trDone[cat]||0)+1;
   setTimeout(()=>{
     document.getElementById('trivia-modal').classList.remove('show');
